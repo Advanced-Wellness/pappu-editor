@@ -33,9 +33,9 @@
     "singleQuote": true,
     "trailingComma": "es5"
   },
-  "name": "aw-rich-editor",
+  "name": "pappu-editor",
   "author": "Ali Muqaddas",
-  "module": "dist/aw-rich-editor.esm.js",
+  "module": "dist/pappu-editor.esm.js",
   "devDependencies": {
     "@babel/core": "^7.10.2",
     "@storybook/addon-actions": "^5.3.19",
