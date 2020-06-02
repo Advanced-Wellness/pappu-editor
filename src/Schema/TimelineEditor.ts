@@ -1,78 +1,40 @@
-import { Schema } from "prosemirror-model"
+import { Schema } from 'prosemirror-model'
 import ParagraphNodeSpec from './TimelineEditorNodes/Paragraph'
-
+import HeadingNodeSpec from './TimelineEditorNodes/Heading'
 
 export const TimelineEditorSchema = new Schema({
   nodes: {
     doc: {
-      content: "block+"
+      content: 'block+'
     },
     paragraph: ParagraphNodeSpec,
-    heading: {
-      attrs: {
-        level: {default: 1},
-        alignment: { default: 'left-align-text' }
-      },
-      content: "inline*",
-      group: "block",
-      defining: true,
-      parseDOM: [
-        {
-          tag: "h1",
-          attrs: {
-            level: 1
-          }
-        },
-        {
-          tag: "h2", 
-          attrs: {
-            level: 2
-          }
-        },
-        {
-          tag: "h3", 
-          attrs: {
-            level: 3
-          }
-        },
-        {
-          tag: "h4", 
-          attrs: {
-            level: 4
-          }
-        },
-        {
-          tag: "h5", 
-          attrs: {
-            level: 5
-          }
-        },
-        {
-          tag: "h6", 
-          attrs: {
-            level: 6
-          }
-        }
-      ],
-      toDOM: (node) => { return ["h" + node.attrs.level, { class: node.attrs.alignment }, 0] }
-    },
+    heading: HeadingNodeSpec,
     text: {
-      group: "inline",
+      group: 'inline',
       inline: true
     }
   },
   marks: {
     strong: {
-      toDOM:() => { return ['strong' ]},
-      parseDOM: [ { tag: 'strong' }]
+      toDOM: () => {
+        return ['strong']
+      },
+      parseDOM: [{ tag: 'strong' }]
     },
     em: {
-      toDom: () => { return ['em'] },
-      parseDOM: [ { tag: 'em' }]
+      toDom: () => {
+        return ['em']
+      },
+      parseDOM: [{ tag: 'em' }]
+    },
+    u: {
+      toDOM: () => {
+        return ['u']
+      },
+      parseDOM: [{ tag: 'u' }, { style: 'text-decoration: underline' }]
     }
   }
 })
-
 
 // const blockquoteDOM = ["blockquote", 0], hrDOM = ["hr"],
 //       preDOM = ["pre", ["code", 0]], brDOM = ["br"]
@@ -113,19 +75,19 @@ export const TimelineEditorSchema = new Schema({
 //   // :: NodeSpec A heading textblock, with a `level` attribute that
 //   // should hold the number 1 to 6. Parsed and serialized as `<h1>` to
 //   // `<h6>` elements.
-  // heading: {
-  //   attrs: {level: {default: 1}},
-  //   content: "inline*",
-  //   group: "block",
-  //   defining: true,
-  //   parseDOM: [{tag: "h1", attrs: {level: 1}},
-  //              {tag: "h2", attrs: {level: 2}},
-  //              {tag: "h3", attrs: {level: 3}},
-  //              {tag: "h4", attrs: {level: 4}},
-  //              {tag: "h5", attrs: {level: 5}},
-  //              {tag: "h6", attrs: {level: 6}}],
-  //   toDOM(node) { return ["h" + node.attrs.level, 0] }
-  // },
+// heading: {
+//   attrs: {level: {default: 1}},
+//   content: "inline*",
+//   group: "block",
+//   defining: true,
+//   parseDOM: [{tag: "h1", attrs: {level: 1}},
+//              {tag: "h2", attrs: {level: 2}},
+//              {tag: "h3", attrs: {level: 3}},
+//              {tag: "h4", attrs: {level: 4}},
+//              {tag: "h5", attrs: {level: 5}},
+//              {tag: "h6", attrs: {level: 6}}],
+//   toDOM(node) { return ["h" + node.attrs.level, 0] }
+// },
 
 //   // :: NodeSpec A code listing. Disallows marks or non-text inline
 //   // nodes by default. Represented as a `<pre>` element with a
