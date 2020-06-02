@@ -20,6 +20,8 @@ const MenuBar: React.FC<MenuBarProps> = ({ editorView }: MenuBarProps) => {
   const isH2 =
     state.selection.$anchor.node().type === TimelineEditorSchema.nodes.heading && state.selection.$anchor.node().attrs.level === 2
 
+  const isLeftAlign = state.selection.$anchor.node().attrs.align === null
+
   console.log('Marks:', isBoldActive, isUnderlineActive, isH1)
   return (
     <div style={{ display: 'flex', flexDirection: 'row', padding: 3 }}>
@@ -108,23 +110,27 @@ const MenuBar: React.FC<MenuBarProps> = ({ editorView }: MenuBarProps) => {
       {/* ALLIGMENT OPERATORS */}
 
       {/* Align Left */}
-      {/* <MenuButton
+      <MenuButton
         key="alignLeft-menu-button"
         onMouseDown={(e) => {
           e.preventDefault()
-          toggleLeftAlign(editor)
+          if (isLeftAlign) {
+            setBlockType(TimelineEditorSchema.nodes.paragraph)(state, dispatch)
+          } else {
+            setBlockType(TimelineEditorSchema.nodes.heading, { level: 1 })(state, dispatch)
+          }
         }}
-        active={isBlockLeftAlign(editor)}
+        active={isLeftAlign}
         style={{ marginLeft: 10 }}
         type="button"
       >
         <img
-          style={{ opacity: isBlockLeftAlign(editor) ? activeIconOpacity : nonActiveIconOpactity }}
+          style={{ opacity: nonActiveIconOpactity }}
           width={buttonWidth}
           alt="align-left"
           src="https://img.icons8.com/ios-glyphs/30/000000/align-left.png"
         />
-      </MenuButton> */}
+      </MenuButton>
 
       {/* Align Center */}
       {/* <MenuButton
