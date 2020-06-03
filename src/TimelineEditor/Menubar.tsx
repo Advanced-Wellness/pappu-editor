@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import { EditorView } from 'prosemirror-view'
 import { toggleMark, setBlockType } from 'prosemirror-commands'
 import { EditorState } from 'prosemirror-state'
+import { ChangeAlignment } from '../commands/changeAlignment'
 import { TimelineEditorSchema } from '../Schema/TimelineEditor'
 
 interface MenuBarProps {
@@ -21,8 +22,10 @@ const MenuBar: React.FC<MenuBarProps> = ({ editorView }: MenuBarProps) => {
     state.selection.$anchor.node().type === TimelineEditorSchema.nodes.heading && state.selection.$anchor.node().attrs.level === 2
 
   const isLeftAlign = state.selection.$anchor.node().attrs.align === null
+  const isCenterAlign = state.selection.$anchor.node().attrs.align === 'center'
+  const isRightAlign = state.selection.$anchor.node().attrs.align === 'right'
 
-  console.log('Marks:', isBoldActive, isUnderlineActive, isH1)
+  console.log('Marks:', isBoldActive, isUnderlineActive, isH1, isH2, isLeftAlign, isCenterAlign, isRightAlign)
   return (
     <div style={{ display: 'flex', flexDirection: 'row', padding: 3 }}>
       {/* BOLD */}
@@ -114,11 +117,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editorView }: MenuBarProps) => {
         key="alignLeft-menu-button"
         onMouseDown={(e) => {
           e.preventDefault()
-          if (isLeftAlign) {
-            setBlockType(TimelineEditorSchema.nodes.paragraph)(state, dispatch)
-          } else {
-            setBlockType(TimelineEditorSchema.nodes.heading, { level: 1 })(state, dispatch)
-          }
+          ChangeAlignment(state, null, dispatch)
         }}
         active={isLeftAlign}
         style={{ marginLeft: 10 }}
@@ -133,40 +132,40 @@ const MenuBar: React.FC<MenuBarProps> = ({ editorView }: MenuBarProps) => {
       </MenuButton>
 
       {/* Align Center */}
-      {/* <MenuButton
+      <MenuButton
         key="alignCenter-menu-button"
         onMouseDown={(e) => {
           e.preventDefault()
-          toggleCenterAlign(editor)
+          ChangeAlignment(state, 'center', dispatch)
         }}
-        active={isBlockCenterAlign(editor)}
+        active={isCenterAlign}
         type="button"
       >
         <img
-          style={{ opacity: isBlockCenterAlign(editor) ? activeIconOpacity : nonActiveIconOpactity }}
+          style={{ opacity: isCenterAlign ? activeIconOpacity : nonActiveIconOpactity }}
           width={buttonWidth}
           alt="align-left"
           src="https://img.icons8.com/ios-glyphs/30/000000/align-center.png"
         />
-      </MenuButton> */}
+      </MenuButton>
 
       {/* Align Right */}
-      {/* <MenuButton
+      <MenuButton
         key="alignRight-menu-button"
-        active={isBlockRightAlign(editor)}
+        active={isRightAlign}
         onMouseDown={(e) => {
           e.preventDefault()
-          toggleRightAlign(editor)
+          ChangeAlignment(state, 'right', dispatch)
         }}
         type="button"
       >
         <img
-          style={{ opacity: isBlockRightAlign(editor) ? activeIconOpacity : nonActiveIconOpactity }}
+          style={{ opacity: isRightAlign ? activeIconOpacity : nonActiveIconOpactity }}
           width={buttonWidth}
           alt="align-left"
           src="https://img.icons8.com/ios-glyphs/30/000000/align-right.png"
         />
-      </MenuButton> */}
+      </MenuButton>
     </div>
   )
 }
