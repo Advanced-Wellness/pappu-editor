@@ -1,7 +1,7 @@
 import React from 'react'
 import styled from 'styled-components'
 import { EditorView } from 'prosemirror-view'
-import { toggleMark, setBlockType } from 'prosemirror-commands'
+import { toggleMark } from 'prosemirror-commands'
 import { EditorState } from 'prosemirror-state'
 import { ChangeBlockType, ChangeAlignment } from '../commands'
 import { TimelineEditorSchema } from '../Schema/TimelineEditor'
