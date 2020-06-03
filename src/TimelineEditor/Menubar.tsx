@@ -3,7 +3,7 @@ import styled from 'styled-components'
 import { EditorView } from 'prosemirror-view'
 import { toggleMark, setBlockType } from 'prosemirror-commands'
 import { EditorState } from 'prosemirror-state'
-import { ChangeAlignment } from '../commands/changeAlignment'
+import { ChangeBlockType, ChangeAlignment } from '../commands'
 import { TimelineEditorSchema } from '../Schema/TimelineEditor'
 
 interface MenuBarProps {
@@ -71,9 +71,11 @@ const MenuBar: React.FC<MenuBarProps> = ({ editorView }: MenuBarProps) => {
         onMouseDown={(event) => {
           event.preventDefault()
           if (isH1) {
-            setBlockType(TimelineEditorSchema.nodes.paragraph)(state, dispatch)
+            ChangeBlockType(state, TimelineEditorSchema.nodes.paragraph, {}, dispatch)
+            // setBlockType(TimelineEditorSchema.nodes.paragraph)(state, dispatch)
           } else {
-            setBlockType(TimelineEditorSchema.nodes.heading, { level: 1 })(state, dispatch)
+            ChangeBlockType(state, TimelineEditorSchema.nodes.heading, { level: 1 }, dispatch)
+            // setBlockType(TimelineEditorSchema.nodes.heading, { level: 1 })(state, dispatch)
           }
         }}
         style={{ marginLeft: 10 }}
@@ -94,9 +96,9 @@ const MenuBar: React.FC<MenuBarProps> = ({ editorView }: MenuBarProps) => {
         onMouseDown={(event) => {
           event.preventDefault()
           if (isH2) {
-            setBlockType(TimelineEditorSchema.nodes.paragraph)(state, dispatch)
+            ChangeBlockType(state, TimelineEditorSchema.nodes.paragraph, {}, dispatch)
           } else {
-            setBlockType(TimelineEditorSchema.nodes.heading, { level: 2 })(state, dispatch)
+            ChangeBlockType(state, TimelineEditorSchema.nodes.heading, { level: 2 }, dispatch)
           }
         }}
         active={isH2}
@@ -119,7 +121,7 @@ const MenuBar: React.FC<MenuBarProps> = ({ editorView }: MenuBarProps) => {
           e.preventDefault()
           ChangeAlignment(state, null, dispatch)
         }}
-        active={isLeftAlign}
+        active={false}
         style={{ marginLeft: 10 }}
         type="button"
       >

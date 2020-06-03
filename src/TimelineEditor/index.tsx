@@ -27,7 +27,7 @@ export default class TimelineEditor extends React.Component<ITimelineEditorProps
     this.EditorView = new EditorView(this.element, {
       state: this.editorState,
       dispatchTransaction: (transaction) => {
-        console.log('transaction:', transaction)
+        // console.log('transaction:', transaction)
         if (!this.EditorView) {
           return
         }
