@@ -23,7 +23,7 @@ export interface ITimelineEditorProps {
   /** Enables the prosemirror dev tools. (default: true) */
   enableDevTools?: boolean
   /** Content of the editor */
-  content?: string | object | undefined
+  content?: string | object | undefined | null
   /** Dont change it for now */
   emptyDocument?: object | null
 }
