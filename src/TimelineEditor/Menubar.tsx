@@ -21,11 +21,10 @@ const MenuBar: React.FC<MenuBarProps> = ({ editorView }: MenuBarProps) => {
   const isH2 =
     state.selection.$anchor.node().type === TimelineEditorSchema.nodes.heading && state.selection.$anchor.node().attrs.level === 2
 
-  const isLeftAlign = state.selection.$anchor.node().attrs.align === null
   const isCenterAlign = state.selection.$anchor.node().attrs.align === 'center'
   const isRightAlign = state.selection.$anchor.node().attrs.align === 'right'
 
-  console.log('Marks:', isBoldActive, isUnderlineActive, isH1, isH2, isLeftAlign, isCenterAlign, isRightAlign)
+  // console.log('Marks:', isBoldActive, isUnderlineActive, isH1, isH2, isLeftAlign, isCenterAlign, isRightAlign)
   return (
     <div style={{ display: 'flex', flexDirection: 'row', padding: 3 }}>
       {/* BOLD */}
