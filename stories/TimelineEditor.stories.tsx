@@ -1,5 +1,7 @@
 import React, { useState } from 'react';
 import { TimelineEditor } from '../src';
+import { EditorState } from 'prosemirror-state';
+import { EditorView } from 'prosemirror-view';
 
 export default {
   title: 'TimelineEditor',
@@ -35,6 +37,24 @@ export const TestHTML = () => {
       <TimelineEditor
         content={content}
         readOnly={true}
+      />
+    </div>
+  )
+}
+
+export const GetDocAndView = () => {
+  const [content, setContent] = useState<string>('')
+  const [editorState, setEditorState] = useState<EditorState | null>(null)
+  const [view, setView] = useState<EditorView | null>(null)
+  return (
+    <div>
+      <button>Clean Editor</button>
+      <TimelineEditor
+        onChange={(content, state, view) => {
+          localStorage.setItem('editor-value', JSON.stringify(content))
+          setEditorState(state)
+          setView(view)
+        }}
       />
     </div>
   )

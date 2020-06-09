@@ -1,1 +1,1 @@
-export { default as TimelineEditor } from './TimelineEditor'
+export { default as TimelineEditor } from './TimelineEditor/index'
