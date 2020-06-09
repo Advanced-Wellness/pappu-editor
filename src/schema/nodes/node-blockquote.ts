@@ -1,6 +1,6 @@
 import { NodeSpec } from 'prosemirror-model'
 import * as block from './block'
-import { getAttribsType } from '../../interfaces'
+import { getAttribsType } from '../../interfaces/schemaHelp'
 
 export const blockquote: NodeSpec = {
   content: 'block+',

@@ -1,29 +1,67 @@
-import { EditorState, Transaction } from 'prosemirror-state'
-import { NodeType } from 'prosemirror-model'
+import { Node, Attrs } from '../interfaces/types'
+import { Command } from './base'
 
-export function ChangeBlockType(state: EditorState, newtype: NodeType, newattribs: object, dispatch: (tr: Transaction<any>) => void) {
-  let transaction = state.tr
+export * from './base'
+export * from './alignment'
 
-  state.doc.nodesBetween(state.selection.from, state.selection.to, (node, pos) => {
-    // We will not change text nodes because they are leafs
-    if (!node.isText) {
-      transaction.setNodeMarkup(pos, newtype, { ...node.attrs, ...newattribs }) // undefined means keep the original node
+function setAttrs(
+  predicate: (node: Node) => boolean,
+  update: (node: Node) => Attrs
+): Command {
+  return (state, dispatch) => {
+    const { from, to } = state.selection
+
+    const { tr } = state
+    state.doc.nodesBetween(from, to, (node, pos) => {
+      if (!predicate(node)) {
+        return
+      }
+
+      tr.setNodeMarkup(pos, undefined, {
+        ...node.attrs,
+        ...update(node)
+      })
+    })
+
+    if (dispatch) {
+      dispatch(tr)
     }
-  })
 
-  dispatch(transaction)
+    return true
+  }
 }
 
-export function ChangeAlignment(state: EditorState, align: string | null, dispatch: (tr: Transaction<any>) => void) {
-  let transaction = state.tr
-
-  state.doc.nodesBetween(state.selection.from, state.selection.to, (node, pos) => {
-    // Now check if node can have align atrib or not
-    // Also check if node is text because we don't apply it to text
-    if (!node.isText && 'align' in node.attrs) {
-      transaction.setNodeMarkup(pos, undefined, { ...node.attrs, align }) // undefined means keep the original node
+export function indent(margin: number) {
+  return setAttrs(
+    (node) => {
+      const { attrs } = node.type.spec
+      return attrs ? !!attrs.indentation : false
+    },
+    (node) => {
+      const indentation = node.attrs.indentation || 0
+      const nextIndentation = Math.max(0, indentation + margin)
+      return {
+        indentation: nextIndentation || null
+      }
     }
-  })
+  )
+}
 
-  dispatch(transaction)
+export function setLineHeight(lineHeight: number) {
+  return setAttrs(
+    (node) => {
+      const { attrs } = node.type.spec
+      return attrs ? !!attrs.lineHeight : false
+    },
+    () => ({ lineHeight })
+  )
+}
+
+export function insertNode(node: Node): Command {
+  return (state, dispatch) => {
+    if (dispatch) {
+      dispatch(state.tr.replaceSelectionWith(node))
+    }
+    return true
+  }
 }

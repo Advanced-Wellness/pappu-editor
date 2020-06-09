@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react'
-import { ITimelineEditorProps } from '../interfaces'
+import { ITimelineEditorProps, ProseMirrorInstance } from '../interfaces'
 
 export default function TimelineEditor(props: ITimelineEditorProps) {
   const [instance, setInstance] = useState<ProseMirrorInstance | null>(null)

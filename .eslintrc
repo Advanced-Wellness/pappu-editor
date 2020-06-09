@@ -63,7 +63,6 @@
             "error",
             {
                 "semi": false,
-                "printWidth": 140,
                 "singleQuote": true,
                 "trailingComma": "none"
             }
@@ -83,6 +82,8 @@
         "import/no-extraneous-dependencies":"off",
         "@typescript-eslint/camelcase": "off",
         "no-return-assign":"off",
-        "react/static-property-placement": "off"
+        "react/static-property-placement": "off",
+        "@typescript-eslint/indent":"off",
+        "consistent-return": "off"
     }
 }
