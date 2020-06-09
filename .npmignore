@@ -7,6 +7,7 @@ src/
 stories/
 .storybook/
 package-lock.json
+yarn.lock
 .babelrc
 .eslintrc.js
 babel.config.js
