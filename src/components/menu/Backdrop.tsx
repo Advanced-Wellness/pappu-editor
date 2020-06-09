@@ -1,5 +1,5 @@
 import React, { FunctionComponent } from 'react'
-import { styled } from '@material-ui/core/styles'
+import styled from 'styled-components'
 
 const Root = styled('div')({
   position: 'fixed',
@@ -17,12 +17,7 @@ interface BackdropProps {
 }
 
 const Backdrop: FunctionComponent<BackdropProps> = ({ onMouseDown }) => {
-  return (
-    <Root
-      aria-hidden
-      onMouseDown={onMouseDown}
-    />
-  )
+  return <Root aria-hidden onMouseDown={onMouseDown} />
 }
 
 export default Backdrop

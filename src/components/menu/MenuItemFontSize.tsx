@@ -5,7 +5,7 @@ import React, {
   FormEvent,
   KeyboardEvent,
 } from 'react'
-import { styled } from '@material-ui/core/styles'
+import styled from 'styled-components'
 import { ArrowUpIcon, ArrowDownIcon } from '../icons'
 import { getFontSize, setMark } from './utils'
 import Overlay from './Overlay'
@@ -165,7 +165,7 @@ const MenuItemFontSize: FunctionComponent = () => {
         <Dropdown className="dropdown is-active">
           <div className="dropdown-menu" id="dropdown-menu3" role="menu">
             <div className="dropdown-content">
-              {PRESET.map(value => (
+              {PRESET.map((value) => (
                 <DropdownItem
                   key={value}
                   currentValue={fontSize}

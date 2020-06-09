@@ -1,17 +1,32 @@
-import { EditorState, Node, Mark, MarkType, Dispatch, schema, Command } from '../../prosemirror'
+import {
+  EditorState,
+  Node,
+  Mark,
+  MarkType,
+  Dispatch,
+  schema,
+  Command,
+} from '../../prosemirror'
 
 export function markActive(state: EditorState, type: MarkType) {
   const { from, $from, to, empty } = state.selection
   return empty
-    ? type.isInSet(state.storedMarks || $from.marks()) ? true : false
+    ? type.isInSet(state.storedMarks || $from.marks())
+      ? true
+      : false
     : state.doc.rangeHasMark(from, to, type)
 }
 
-function marksAcross(state: EditorState, from: number, to: number, type: MarkType) {
+function marksAcross(
+  state: EditorState,
+  from: number,
+  to: number,
+  type: MarkType,
+) {
   const marks: Mark[] = []
 
   if (to > from) {
-    state.doc.nodesBetween(from, to, node => {
+    state.doc.nodesBetween(from, to, (node) => {
       for (const mark of node.marks) {
         if (mark.type === type) {
           marks.push(mark)
@@ -34,10 +49,13 @@ export function getMarks(state: EditorState, type: MarkType) {
     return []
   }
 
-  return marks.filter(mark => mark.type.name === type.name)
+  return marks.filter((mark) => mark.type.name === type.name)
 }
 
-function getUniqueMarkValue<T>(state: EditorState, getValue: (marks: Mark[]) => T): T | null {
+function getUniqueMarkValue<T>(
+  state: EditorState,
+  getValue: (marks: Mark[]) => T,
+): T | null {
   const { from, to, $from, empty } = state.selection
 
   if (empty) {
@@ -48,7 +66,7 @@ function getUniqueMarkValue<T>(state: EditorState, getValue: (marks: Mark[]) => 
   let value: T | null = null
   let conflicted = false
 
-  state.doc.nodesBetween(from, to, node => {
+  state.doc.nodesBetween(from, to, (node) => {
     if (conflicted) {
       return false
     }
@@ -75,8 +93,8 @@ function getUniqueMarkValue<T>(state: EditorState, getValue: (marks: Mark[]) => 
 const DEFAULT_FONT_FAMILY = 'Dotum'
 
 export function getFontFamily(state: EditorState) {
-  return getUniqueMarkValue<string>(state, marks => {
-    const mark = marks.find(mark => mark.type === schema.marks.font_family)
+  return getUniqueMarkValue<string>(state, (marks) => {
+    const mark = marks.find((mark) => mark.type === schema.marks.font_family)
     return mark ? mark.attrs.family : DEFAULT_FONT_FAMILY
   })
 }
@@ -84,8 +102,8 @@ export function getFontFamily(state: EditorState) {
 const DEFAULT_FONT_SIZE = 13
 
 export function getFontSize(state: EditorState) {
-  return getUniqueMarkValue<number>(state, marks => {
-    const mark = marks.find(mark => mark.type === schema.marks.font_size)
+  return getUniqueMarkValue<number>(state, (marks) => {
+    const mark = marks.find((mark) => mark.type === schema.marks.font_size)
     return mark ? mark.attrs.size : DEFAULT_FONT_SIZE
   })
 }
@@ -93,8 +111,8 @@ export function getFontSize(state: EditorState) {
 const DEFAULT_FONT_COLOR = 'black'
 
 export function getFontColor(state: EditorState) {
-  return getUniqueMarkValue<string>(state, marks => {
-    const mark = marks.find(mark => mark.type === schema.marks.font_color)
+  return getUniqueMarkValue<string>(state, (marks) => {
+    const mark = marks.find((mark) => mark.type === schema.marks.font_color)
     return mark ? mark.attrs.color : DEFAULT_FONT_COLOR
   })
 }
@@ -102,8 +120,10 @@ export function getFontColor(state: EditorState) {
 const DEFAULT_BACKGROUND_COLOR = '#ffffff'
 
 export function getBackgroundColor(state: EditorState) {
-  return getUniqueMarkValue<string>(state, marks => {
-    const mark = marks.find(mark => mark.type === schema.marks.background_color)
+  return getUniqueMarkValue<string>(state, (marks) => {
+    const mark = marks.find(
+      (mark) => mark.type === schema.marks.background_color,
+    )
     return mark ? mark.attrs.color : DEFAULT_BACKGROUND_COLOR
   })
 }
@@ -135,7 +155,10 @@ export function removeMark(markType: MarkType) {
   }
 }
 
-export function getNodeValues<T>(state: EditorState, getter: (node: Node) => T) {
+export function getNodeValues<T>(
+  state: EditorState,
+  getter: (node: Node) => T,
+) {
   const result = new Set<T>()
 
   const { from, to } = state.selection
@@ -150,12 +173,13 @@ export function getNodeValues<T>(state: EditorState, getter: (node: Node) => T) 
   return result
 }
 
-export function getNodeUniqueValue<T>(state: EditorState, getter: (node: Node) => T) {
+export function getNodeUniqueValue<T>(
+  state: EditorState,
+  getter: (node: Node) => T,
+) {
   const values = getNodeValues(state, getter)
 
-  return values.size === 1
-    ? values.values().next().value
-    : null
+  return values.size === 1 ? values.values().next().value : null
 }
 
 // export function mutateNodes(type: MarkType, attrs: any) {
@@ -222,7 +246,6 @@ export function getNodeUniqueValue<T>(state: EditorState, getter: (node: Node) =
 //     //   //     added.push(adding = new AddMarkStep(start, end, mark))
 //     //   // }
 //     // })
-
 
 //     // // let tr = state.tr
 

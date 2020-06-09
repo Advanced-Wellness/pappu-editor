@@ -1,6 +1,6 @@
 import React, { FunctionComponent, useState, useCallback } from 'react'
 import { SketchPicker } from 'react-color'
-import { styled } from '@material-ui/core/styles'
+import styled from 'styled-components'
 import { useProseMirrorState, schema } from '../../prosemirror'
 import { ColorTextIcon, ColorBackgroundIcon } from '../icons'
 import { getFontColor, getBackgroundColor, setMark } from './utils'
@@ -23,9 +23,12 @@ const MenuItemTextColor: FunctionComponent = () => {
     setOpen(false)
   }, [])
 
-  const handleColorChange = useCallback(({ hex }) => {
-    applyCommand(setMark(schema.marks.font_color, { color: hex }))
-  }, [applyCommand])
+  const handleColorChange = useCallback(
+    ({ hex }) => {
+      applyCommand(setMark(schema.marks.font_color, { color: hex }))
+    },
+    [applyCommand],
+  )
 
   return (
     <>
@@ -54,14 +57,19 @@ const MenuItemBackgroundColor: FunctionComponent = () => {
     setOpen(false)
   }, [])
 
-  const handleColorChange = useCallback(({ hex }) => {
-    applyCommand(setMark(schema.marks.background_color, { color: hex }))
-  }, [applyCommand])
+  const handleColorChange = useCallback(
+    ({ hex }) => {
+      applyCommand(setMark(schema.marks.background_color, { color: hex }))
+    },
+    [applyCommand],
+  )
 
   return (
     <>
       <MenuButton onClick={handleClick}>
-        <ColorBackgroundIcon squareStyle={{ fill: color || 'rgba(0, 0, 0, 0)' }} />
+        <ColorBackgroundIcon
+          squareStyle={{ fill: color || 'rgba(0, 0, 0, 0)' }}
+        />
       </MenuButton>
       <StyledOverlay open={open} onClose={handleClose}>
         <SketchPicker

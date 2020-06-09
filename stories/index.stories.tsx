@@ -2,8 +2,6 @@ import React, { useRef } from 'react'
 
 import { storiesOf } from '@storybook/react'
 import { action } from '@storybook/addon-actions'
-import { makeStyles } from '@material-ui/core/styles'
-import 'bulma/css/bulma.css'
 import axios from 'axios'
 
 import Editor, { EditorAPI, EditorProps } from '../src/components/Editor'
@@ -11,15 +9,6 @@ import '../src/style.scss'
 import exampleDocument from './example-document'
 
 const EDITOR_CLASS_NAME = 'editor'
-
-const useStyles = makeStyles({
-  editor: {
-    [`& .${EDITOR_CLASS_NAME}`]: {
-      minHeight: 300,
-      maxWidth: 842,
-    },
-  },
-})
 
 async function createUploadURL(contentType: string) {
   const response = await axios.post('http://localhost:4000/graphql', {
@@ -55,9 +44,8 @@ async function completeUpload(meta: any[]) {
   console.log(meta)
 }
 
-const EditorContainer: React.FC<Partial<EditorProps>> = props => {
+const EditorContainer: React.FC<Partial<EditorProps>> = (props) => {
   const ref = useRef<EditorAPI>(null)
-  const classes = useStyles()
 
   return (
     <>
@@ -78,7 +66,10 @@ const EditorContainer: React.FC<Partial<EditorProps>> = props => {
 
       <button
         onClick={() => {
-          action('set content')(ref.current && ref.current.setContent('<p><b>I am</b> <em>set</em></p>'))
+          action('set content')(
+            ref.current &&
+              ref.current.setContent('<p><b>I am</b> <em>set</em></p>'),
+          )
         }}
       >
         set content
@@ -86,7 +77,10 @@ const EditorContainer: React.FC<Partial<EditorProps>> = props => {
 
       <button
         onClick={() => {
-          action('append content')(ref.current && ref.current.appendContent('<p><b>I am</b> <em>appended</em></p>'))
+          action('append content')(
+            ref.current &&
+              ref.current.appendContent('<p><b>I am</b> <em>appended</em></p>'),
+          )
         }}
       >
         append content
@@ -101,13 +95,10 @@ const EditorContainer: React.FC<Partial<EditorProps>> = props => {
       </button>
 
       <Editor
-        className={classes.editor}
         editorClassName={EDITOR_CLASS_NAME}
-        onChange={view => {
+        onChange={(view) => {
           console.log(view)
         }}
-        createUploadURL={createUploadURL}
-        completeUpload={completeUpload}
         {...props}
         ref={ref}
         onBlur={() => console.log('onBlur')}

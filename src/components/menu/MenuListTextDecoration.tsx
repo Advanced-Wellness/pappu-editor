@@ -10,7 +10,9 @@ import { Buttons, MenuButton } from './base'
 const toggleBold = toggleMark(schema.marks.strong)
 
 const MenuItemBold: FunctionComponent = () => {
-  const [active, applyCommand] = useProseMirrorState(state => markActive(state, schema.marks.strong))
+  const [active, applyCommand] = useProseMirrorState((state) =>
+    markActive(state, schema.marks.strong),
+  )
 
   const handleClick = useCallback(() => {
     applyCommand(toggleBold)
@@ -28,7 +30,9 @@ const MenuItemBold: FunctionComponent = () => {
 const toggleUnderline = toggleMark(schema.marks.u)
 
 const MenuItemUnderline: FunctionComponent = () => {
-  const [active, applyCommand] = useProseMirrorState(state => markActive(state, schema.marks.u))
+  const [active, applyCommand] = useProseMirrorState((state) =>
+    markActive(state, schema.marks.u),
+  )
 
   const handleClick = useCallback(() => {
     applyCommand(toggleUnderline)
@@ -46,7 +50,9 @@ const MenuItemUnderline: FunctionComponent = () => {
 const toggleItalic = toggleMark(schema.marks.em)
 
 const MenuItemItalic: FunctionComponent = () => {
-  const [active, applyCommand] = useProseMirrorState(state => markActive(state, schema.marks.em))
+  const [active, applyCommand] = useProseMirrorState((state) =>
+    markActive(state, schema.marks.em),
+  )
 
   const handleClick = useCallback(() => {
     applyCommand(toggleItalic)
@@ -64,7 +70,9 @@ const MenuItemItalic: FunctionComponent = () => {
 const toggleStrike = toggleMark(schema.marks.s)
 
 const MenuItemStrike: FunctionComponent = () => {
-  const [active, applyCommand] = useProseMirrorState(state => markActive(state, schema.marks.s))
+  const [active, applyCommand] = useProseMirrorState((state) =>
+    markActive(state, schema.marks.s),
+  )
 
   const handleClick = useCallback(() => {
     applyCommand(toggleStrike)

@@ -1,5 +1,5 @@
 import React, { CSSProperties, forwardRef, RefForwardingComponent } from 'react'
-import { styled } from '@material-ui/core/styles'
+import styled from 'styled-components'
 import Backdrop from './Backdrop'
 
 const OverlayRoot = styled('div')({
@@ -14,7 +14,10 @@ interface OverlayProps {
   children: React.ReactNode
 }
 
-const Overlay: RefForwardingComponent<HTMLDivElement, OverlayProps> = ({ open, onClose, className, style, children }, ref) => {
+const Overlay: RefForwardingComponent<HTMLDivElement, OverlayProps> = (
+  { open, onClose, className, style, children },
+  ref,
+) => {
   return (
     <OverlayRoot className={className} style={style} ref={ref}>
       {open && (

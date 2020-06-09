@@ -1,5 +1,5 @@
 import React, { FunctionComponent, PropsWithChildren, useCallback } from 'react'
-import { styled } from '@material-ui/core/styles'
+import styled from 'styled-components'
 import cn from 'clsx'
 
 export const InlineBlock = styled('div')({
@@ -13,12 +13,11 @@ interface ButtonsBaseProps {
   className?: string
 }
 
-const ButtonsBase: FunctionComponent<ButtonsBaseProps> = ({ className, children }) => {
-  return (
-    <div className={cn('buttons has-addons', className)}>
-      {children}
-    </div>
-  )
+const ButtonsBase: FunctionComponent<ButtonsBaseProps> = ({
+  className,
+  children,
+}) => {
+  return <div className={cn('buttons has-addons', className)}>{children}</div>
 }
 
 export const Buttons = styled(ButtonsBase)({
@@ -40,7 +39,12 @@ interface MenuButtonProps {
   active?: boolean
 }
 
-export const MenuButton: FunctionComponent<MenuButtonProps> = ({ onClick, disabled, active, children }) => {
+export const MenuButton: FunctionComponent<MenuButtonProps> = ({
+  onClick,
+  disabled,
+  active,
+  children,
+}) => {
   return (
     <button
       type="button"
@@ -48,9 +52,7 @@ export const MenuButton: FunctionComponent<MenuButtonProps> = ({ onClick, disabl
       onClick={onClick}
       disabled={disabled}
     >
-      <span className="icon is-small">
-        {children}
-      </span>
+      <span className="icon is-small">{children}</span>
     </button>
   )
 }
@@ -92,7 +94,12 @@ interface DropdownItemProps<T> {
   onClick: (value: T) => any
 }
 
-export function DropdownItem<T extends number | string>({ currentValue, value, onClick, children }: PropsWithChildren<DropdownItemProps<T>>) {
+export function DropdownItem<T extends number | string>({
+  currentValue,
+  value,
+  onClick,
+  children,
+}: PropsWithChildren<DropdownItemProps<T>>) {
   const handleClick = useCallback(() => onClick(value), [value])
 
   return (

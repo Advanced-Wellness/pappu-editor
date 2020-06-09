@@ -111,7 +111,7 @@ export const ProseMirror = forwardRef<
   const { className, initialValue, children, placeholder, onChange } = props
   const [instance, setInstance] = useState<ProseMirrorInstance | null>(null)
 
-  useImperativeHandle(ref, () => instance, [instance])
+  useImperativeHandle(ref, () => instance as ProseMirrorInstance, [instance])
 
   useEffect(() => {
     const proseMirror = createProseMirror({
@@ -119,7 +119,7 @@ export const ProseMirror = forwardRef<
       initialValue,
       placeholder,
       directEditorProps: {
-        dispatchTransaction: transaction => {
+        dispatchTransaction: (transaction) => {
           const editorState = proseMirror.view.state.apply(transaction)
           proseMirror.view.updateState(editorState)
 

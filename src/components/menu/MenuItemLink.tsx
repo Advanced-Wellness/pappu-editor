@@ -5,7 +5,7 @@ import React, {
   useRef,
   FormEvent,
 } from 'react'
-import { styled } from '@material-ui/core/styles'
+import styled from 'styled-components'
 import {
   useProseMirrorState,
   schema,
@@ -86,7 +86,7 @@ const Input = styled('input')({
 const removeLinkMark = removeMark(schema.marks.link)
 
 const MenuItemLink: FunctionComponent = () => {
-  const [empty, _, view] = useProseMirrorState(state => state.selection.empty)
+  const [empty, _, view] = useProseMirrorState((state) => state.selection.empty)
   const [position, setPosition] = useState<any>(null)
   const overlayRef = useRef<HTMLDivElement>(null)
 

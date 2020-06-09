@@ -16,14 +16,12 @@ import {
   createAPI,
   EditorAPI,
 } from '../prosemirror'
-import { ServiceContext } from '../service'
-import { FileUploadUtils } from './FileUploadDialog'
 import DesktopLayout from './DesktopLayout'
 import MobileLayout from './MobileLayout'
 
 export { EditorAPI }
 
-export interface EditorProps extends FileUploadUtils {
+export interface EditorProps {
   className?: string
   editorClassName?: string
   desktopMenuClassName?: string
@@ -56,11 +54,7 @@ const Editor: RefForwardingComponent<EditorAPI, EditorProps> = (
     (ref: Ref) => {
       const element = <div ref={ref} />
       return isMobile.any ? (
-        <MobileLayout
-          className={className}
-          onFocus={onFocus}
-          onBlur={onBlur}
-        >
+        <MobileLayout className={className} onFocus={onFocus} onBlur={onBlur}>
           {element}
         </MobileLayout>
       ) : (
@@ -78,17 +72,15 @@ const Editor: RefForwardingComponent<EditorAPI, EditorProps> = (
   )
 
   return (
-    <ServiceContext.Provider value={other}>
-      <ProseMirror
-        onChange={onChange}
-        className={editorClassName}
-        initialValue={initialValue}
-        placeholder={placeholder || ''}
-        ref={proseMirrorRef}
-      >
-        {render}
-      </ProseMirror>
-    </ServiceContext.Provider>
+    <ProseMirror
+      onChange={onChange}
+      className={editorClassName}
+      initialValue={initialValue}
+      placeholder={placeholder || ''}
+      ref={proseMirrorRef}
+    >
+      {render}
+    </ProseMirror>
   )
 }
 

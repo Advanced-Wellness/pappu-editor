@@ -1,5 +1,5 @@
 import React, { FunctionComponent, useState, useCallback } from 'react'
-import { styled } from '@material-ui/core/styles'
+import styled from 'styled-components'
 import { useProseMirrorState, schema } from '../../prosemirror'
 import { ArrowUpIcon, ArrowDownIcon } from '../icons'
 import { getFontFamily, setMark } from './utils'

@@ -1,6 +1,6 @@
-import React, { FunctionComponent, useCallback, useRef } from 'react'
-import { styled } from '@material-ui/core/styles'
-import { ImageIcon, YoutubeIcon } from '../icons'
+import React, { FunctionComponent } from 'react'
+import styled from 'styled-components'
+import { YoutubeIcon } from '../icons'
 import MenuItemFontFamily from './MenuItemFontFamily'
 import MenuItemFontSize from './MenuItemFontSize'
 import MenuListTextDecoration from './MenuListTextDecoration'
@@ -8,7 +8,6 @@ import MenuListColor from './MenuListColor'
 import MenuListAlign from './MenuListAlign'
 import MenuListIndent from './MenuListIndent'
 import MenuItemLineHeight from './MenuItemLineHeight'
-import MenuItemInsertImage, { MenuItemInsertImageAPI } from './MenuItemInsertImage'
 import MenuItemInsertYoutube from './MenuItemInsertYoutube'
 import MenuItemLink from './MenuItemLink'
 import { Buttons, MenuButton } from './base'
@@ -29,26 +28,6 @@ const MenuSection = styled('div')({
 
 interface MenuBarProps {
   className?: string
-}
-
-const MenuItemInsertImageContainer: FunctionComponent = () => {
-  const apiRef = useRef<MenuItemInsertImageAPI>(null)
-
-  const handleClick = useCallback(() => {
-    if (!apiRef.current) {
-      return
-    }
-    apiRef.current.openDialog()
-  }, [])
-
-  return (
-    <>
-      <MenuButton onClick={handleClick}>
-        <ImageIcon />
-      </MenuButton>
-      <MenuItemInsertImage ref={apiRef} />
-    </>
-  )
 }
 
 function renderInsertYoutube(onClick: () => any) {
@@ -83,7 +62,6 @@ const MenuBar: FunctionComponent<MenuBarProps> = ({ className }) => {
       </MenuSection>
       <MenuSection>
         <Buttons>
-          <MenuItemInsertImageContainer />
           <MenuItemInsertYoutube render={renderInsertYoutube} />
           <MenuItemLink />
         </Buttons>

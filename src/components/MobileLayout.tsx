@@ -1,15 +1,7 @@
-import React, {
-  FunctionComponent,
-  useCallback,
-  useRef,
-  FocusEventHandler,
-} from 'react'
-import { styled } from '@material-ui/core/styles'
-import MenuItemInsertImage, {
-  MenuItemInsertImageAPI,
-} from './menu/MenuItemInsertImage'
+import React, { FunctionComponent, FocusEventHandler } from 'react'
+import styled from 'styled-components'
 import MenuItemInsertYoutube from './menu/MenuItemInsertYoutube'
-import { ImageLargeIcon, YoutubeLargeIcon } from './icons'
+import { YoutubeLargeIcon } from './icons'
 
 const Root = styled('div')({
   borderTop: '1px solid #e8e8e8',
@@ -40,28 +32,8 @@ const IconButton = styled('button')({
   '& svg': {
     width: 40,
     height: 40,
-  }
+  },
 })
-
-const MenuItemInsertImageContainer: FunctionComponent = () => {
-  const apiRef = useRef<MenuItemInsertImageAPI | null>(null)
-
-  const handleClick = useCallback(() => {
-    if (!apiRef.current) {
-      return
-    }
-    apiRef.current.clickFileInput()
-  }, [])
-
-  return (
-    <>
-      <IconButton type="button" onClick={handleClick}>
-        <ImageLargeIcon />
-      </IconButton>
-      <MenuItemInsertImage ref={apiRef} />
-    </>
-  )
-}
 
 function renderInsertYoutube(onClick: () => any) {
   return (
@@ -81,7 +53,6 @@ const MobileLayout: FunctionComponent<MobileLayoutProps> = ({
     <div className={className} onFocus={onFocus} onBlur={onBlur}>
       {children}
       <Root>
-        <MenuItemInsertImageContainer />
         <MenuItemInsertYoutube render={renderInsertYoutube} />
       </Root>
     </div>

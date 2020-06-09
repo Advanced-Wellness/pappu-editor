@@ -15,13 +15,13 @@ import { Buttons, MenuButton } from './base'
 function getAlignment(state: EditorState) {
   if (state.selection instanceof CellSelection) {
     const marks: string[] = []
-    state.selection.forEachCell(cell => {
+    state.selection.forEachCell((cell) => {
       const mark = cell.firstChild!.marks.filter(
-        mark => mark.type === state.schema.marks.alignment,
+        (mark) => mark.type === state.schema.marks.alignment,
       )[0]
       marks.push(mark ? mark.attrs.align : 'left')
     })
-    return marks.every(mark => mark === marks[0])
+    return marks.every((mark) => mark === marks[0])
       ? (marks[0] as AlignmentState)
       : 'left'
   }
@@ -32,7 +32,7 @@ function getAlignment(state: EditorState) {
   const getMark =
     node &&
     node.node.marks.filter(
-      mark => mark.type === state.schema.marks.alignment,
+      (mark) => mark.type === state.schema.marks.alignment,
     )[0]
 
   return (getMark && getMark.attrs.align) || 'left'
@@ -55,7 +55,7 @@ const MenuListAlign: FunctionComponent = () => {
   )
 
   const handleAlignClick = useCallback(
-    align => {
+    (align) => {
       applyCommand(changeAlignment(align))
     },
     [applyCommand],
