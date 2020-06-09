@@ -52,17 +52,18 @@ const EditorContainer: React.FC<Partial<EditorProps>> = (props) => {
       >
         clear state
       </button>
-
-      <TimelineEditor
-        onChange={(view) => {
-          console.log(view)
-        }}
-        {...props}
-        placeholder="Type your message here"
-        ref={ref}
-        onBlur={() => console.log('onBlur')}
-        onFocus={() => console.log('onFocus')}
-      />
+      <div style={{ marginTop: 20 }}>
+        <TimelineEditor
+          onChange={(view) => {
+            console.log(view)
+          }}
+          {...props}
+          placeholder="Type your message here"
+          ref={ref}
+          onBlur={() => console.log('onBlur')}
+          onFocus={() => console.log('onFocus')}
+        />
+      </div>
     </>
   )
 }

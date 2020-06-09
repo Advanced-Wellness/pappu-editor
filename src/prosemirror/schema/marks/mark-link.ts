@@ -13,12 +13,17 @@ export const link: MarkSpec = {
         return {
           href: dom.getAttribute('href'),
           title: dom.getAttribute('title'),
+          target: dom.getAttribute('target'),
         }
       },
     },
   ],
   toDOM(node) {
     const { href, title } = node.attrs
-    return ['a', { href, title }, 0]
-  }
+    return [
+      'a',
+      { href, title, target: '__blank', rel: 'noopener noreferrer' },
+      0,
+    ]
+  },
 }
