@@ -2,7 +2,7 @@ import React, { ReactElement, useCallback, FunctionComponent } from 'react'
 import styled from 'styled-components'
 import { toggleMark } from 'prosemirror-commands'
 import { schema, useProseMirrorState } from '../../prosemirror'
-import { markActive } from '../../components/menu/utils'
+import { markActive } from '../../utils'
 
 const toggleBold = toggleMark(schema.marks.strong)
 const toggleUnderline = toggleMark(schema.marks.u)
