@@ -1,1 +1,5 @@
-export { default, EditorAPI, EditorProps } from './components/Editor'
+export {
+  default as TimelineEditor,
+  EditorAPI,
+  EditorProps,
+} from './TimelineEditor'

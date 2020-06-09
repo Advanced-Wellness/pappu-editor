@@ -2,6 +2,7 @@ import React, { useRef } from 'react'
 import TimelineEditor, { EditorAPI, EditorProps } from '../src/TimelineEditor'
 import { storiesOf } from '@storybook/react'
 import { action } from '@storybook/addon-actions'
+import '../src/style.scss'
 
 const EditorContainer: React.FC<Partial<EditorProps>> = (props) => {
   const ref = useRef<EditorAPI>(null)
