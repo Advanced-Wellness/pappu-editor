@@ -13,7 +13,8 @@ export const image: NodeSpec = {
   parseDOM: [
     {
       tag: 'img[src]',
-      getAttrs(dom: HTMLElement) {
+      getAttrs: (gotDom) => {
+        let dom = (gotDom as Node) as HTMLElement
         return {
           width: dom.style.width,
           src: dom.getAttribute('src'),

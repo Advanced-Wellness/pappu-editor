@@ -9,7 +9,8 @@ export const link: MarkSpec = {
   parseDOM: [
     {
       tag: 'a[href]',
-      getAttrs(dom: Element) {
+      getAttrs(gotDom) {
+        let dom = (gotDom as Node) as HTMLElement
         return {
           href: dom.getAttribute('href'),
           title: dom.getAttribute('title')

@@ -11,7 +11,6 @@ import { iframe } from './node-iframe'
 import { image } from './node-image'
 import { paragraph } from './node-paragraph'
 import { text } from './node-text'
-import table from './node-tables'
 
 export { Attrs } from './base'
 
@@ -26,13 +25,6 @@ export type NodeName =
   | 'iframe'
   | 'image'
   | 'text'
-  | 'table'
-  | 'table_row'
-  | 'table_cell'
-  | 'table_header'
-  | 'table_colgroup'
-  | 'table_col'
-  | 'table_body'
 
 export const nodes = OrderedMap.from<NodeSpec>({
   doc
@@ -49,12 +41,5 @@ export const nodes = OrderedMap.from<NodeSpec>({
     horizontal_rule,
     iframe,
     image,
-    text,
-    table: table.table,
-    table_row: table.table_row,
-    table_cell: table.table_cell,
-    table_header: table.table_header,
-    table_colgroup: table.table_colgroup,
-    table_col: table.table_col,
-    table_body: table.table_body
+    text
   })

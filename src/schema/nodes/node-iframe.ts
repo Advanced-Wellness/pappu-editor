@@ -37,7 +37,8 @@ export const iframe: NodeSpec = {
   parseDOM: [
     {
       tag: 'iframe',
-      getAttrs(dom: Element) {
+      getAttrs(gotDom) {
+        let dom = (gotDom as Node) as HTMLElement
         return getElementAttrs(dom)
       }
     }

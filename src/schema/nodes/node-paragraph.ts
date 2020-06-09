@@ -1,5 +1,6 @@
 import { NodeSpec } from 'prosemirror-model'
 import * as block from './block'
+import { getAttribsType } from '../../interfaces'
 
 export const paragraph: NodeSpec = {
   content: 'inline*',
@@ -9,7 +10,7 @@ export const paragraph: NodeSpec = {
   parseDOM: [
     {
       tag: 'p',
-      getAttrs: block.getAttrs
+      getAttrs: block.getAttrs as getAttribsType
     }
   ],
   toDOM(node) {
