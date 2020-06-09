@@ -1,11 +1,7 @@
 {
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "editor.formatOnSave": true,
   "files.associations": {
-    "*.js": "javascript"
-  },
-  "editor.insertSpaces": true,
-  "editor.detectIndentation": false,
-  // "editor.formatOnSave": true,
-  "editor.codeActionsOnSave": {
-    "source.fixAll.eslint": true
+    ".sequelizerc": "javascript"
   }
 }
