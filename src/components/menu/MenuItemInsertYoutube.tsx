@@ -43,13 +43,13 @@ const YoutubeDialog: FunctionComponent<YoutubeDialogProps> = ({
 
   return (
     <Modal isOpen={open} onClose={onClose}>
-      <ModalHeader onClose={onClose}>Youtube 영상 추가</ModalHeader>
+      <ModalHeader onClose={onClose}>Youtube Video</ModalHeader>
       <ModalBody>
         <div className="control">
           <input
             className="input"
             type="text"
-            placeholder="링크 주소를 입력하세요"
+            placeholder="Youtube Video Link"
             value={url}
             onChange={handleChangeURL}
           />
@@ -62,7 +62,7 @@ const YoutubeDialog: FunctionComponent<YoutubeDialogProps> = ({
           onClick={handleAdd}
           disabled={!url}
         >
-          추가하기
+          Add
         </button>
       </ModalFooter>
     </Modal>

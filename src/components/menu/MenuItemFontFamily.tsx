@@ -16,12 +16,12 @@ const PRESET = [
 ]
 
 const LABELS = {
-  'Dotum': '돋움',
-  'Gulim': '굴림',
-  'Batang': '바탕',
-  'Gungsuh': '궁서',
-  'NanumGothic': '나눔고딕',
-  'NanumMyeongjo': '나눔명조',
+  Dotum: 'Dotum',
+  Gulim: 'Gulim',
+  Batang: 'Batang',
+  Gungsuh: 'Gungsuh',
+  NanumGothic: 'NanumGothic',
+  NanumMyeongjo: 'NanumMyeongjo',
 }
 
 const FontSpan = styled('span')({
@@ -41,16 +41,19 @@ const MenuItemFontFamily: FunctionComponent = () => {
     setOpen(false)
   }, [])
 
-  const handleCommit = useCallback((value: string) => {
-    setOpen(false)
-    applyCommand(setMark(schema.marks.font_family, { family: value }))
-    view.focus()
-  }, [applyCommand, view])
+  const handleCommit = useCallback(
+    (value: string) => {
+      setOpen(false)
+      applyCommand(setMark(schema.marks.font_family, { family: value }))
+      view.focus()
+    },
+    [applyCommand, view],
+  )
 
   return (
     <>
       <a className="button is-small is-white" onClick={handleClick}>
-        <FontSpan>{fontFamily && LABELS[fontFamily] || ''}</FontSpan>
+        <FontSpan>{(fontFamily && LABELS[fontFamily]) || ''}</FontSpan>
         <span className="icon is-small">
           {open ? <ArrowUpIcon /> : <ArrowDownIcon />}
         </span>
@@ -59,7 +62,7 @@ const MenuItemFontFamily: FunctionComponent = () => {
         <Dropdown className="dropdown is-active">
           <div className="dropdown-menu" role="menu">
             <div className="dropdown-content">
-              {PRESET.map(value => (
+              {PRESET.map((value) => (
                 <DropdownItem
                   key={value}
                   currentValue={fontFamily}
