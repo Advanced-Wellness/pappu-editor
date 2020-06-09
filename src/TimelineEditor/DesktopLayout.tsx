@@ -1,5 +1,5 @@
 import React, { FunctionComponent, FocusEventHandler } from 'react'
-import MenuBar from './menu/MenuBar'
+import TimelineEditorMenuBar from './MenuBar'
 
 interface DesktopLayoutProps {
   className?: string
@@ -17,7 +17,7 @@ const DesktopLayout: FunctionComponent<DesktopLayoutProps> = ({
 }) => {
   return (
     <div className={className} onFocus={onFocus} onBlur={onBlur}>
-      {/* <MenuBar className={menuClassName} /> */}
+      <TimelineEditorMenuBar />
       {children}
     </div>
   )

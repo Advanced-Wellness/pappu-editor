@@ -58,6 +58,7 @@ const EditorContainer: React.FC<Partial<EditorProps>> = (props) => {
           console.log(view)
         }}
         {...props}
+        placeholder="Type your message here"
         ref={ref}
         onBlur={() => console.log('onBlur')}
         onFocus={() => console.log('onFocus')}
