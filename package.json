@@ -21,9 +21,7 @@
     "build:css": "postcss src/style.scss -o dist/style.css",
     "deploy": "yarn build && ./deploy.sh",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook",
-    "test": "jest",
-    "test-watch": "jest --watch"
+    "build-storybook": "build-storybook"
   },
   "peerDependencies": {
     "react": "^16.8.6"
