@@ -2,7 +2,6 @@
 import { Node as PMNode, NodeType, MarkType, Schema } from 'prosemirror-model'
 import { EditorState, Transaction } from 'prosemirror-state'
 import { EditorView } from 'prosemirror-view'
-import { CellSelection } from 'prosemirror-tables'
 
 export type CommandDispatch = (tr: Transaction) => void
 export type Command = (
@@ -36,7 +35,7 @@ export const createToggleBlockMarkOnRange = <T = object>(
           : allowedBlocks(state.schema, node, parent))) &&
       parent.type.allowsMarkType(markType)
     ) {
-      const oldMarks = node.marks.filter(mark => mark.type === markType)
+      const oldMarks = node.marks.filter((mark) => mark.type === markType)
 
       const prevAttrs = oldMarks.length ? (oldMarks[0].attrs as T) : undefined
       const newAttrs = getAttrs(prevAttrs, node)
@@ -47,7 +46,7 @@ export const createToggleBlockMarkOnRange = <T = object>(
           node.type,
           node.attrs,
           node.marks
-            .filter(mark => !markType.excludes(mark.type))
+            .filter((mark) => !markType.excludes(mark.type))
             .concat(newAttrs === false ? [] : markType.create(newAttrs)),
         )
         markApplied = true
@@ -80,14 +79,8 @@ export const toggleBlockMark = <T = object>(
     allowedBlocks,
   )
 
-  if (state.selection instanceof CellSelection) {
-    state.selection.forEachCell((cell, pos) => {
-      markApplied = toggleBlockMarkOnRange(pos, pos + cell.nodeSize, tr, state)
-    })
-  } else {
-    const { from, to } = state.selection
-    markApplied = toggleBlockMarkOnRange(from, to, tr, state)
-  }
+  const { from, to } = state.selection
+  markApplied = toggleBlockMarkOnRange(from, to, tr, state)
 
   if (markApplied && tr.docChanged) {
     if (dispatch) {
