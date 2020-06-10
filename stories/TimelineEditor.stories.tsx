@@ -1,5 +1,6 @@
 import React, { useRef } from 'react'
 import TimelineEditor, { EditorAPI, EditorProps } from '../src/TimelineEditor'
+import TimelineEditorPreview from '../src/TimelineEditor/Preview'
 import { storiesOf } from '@storybook/react'
 import { action } from '@storybook/addon-actions'
 import '../src/style.scss'
@@ -56,7 +57,11 @@ const EditorContainer: React.FC<Partial<EditorProps>> = (props) => {
       <div style={{ marginTop: 20 }}>
         <TimelineEditor
           onChange={(view) => {
-            console.log(view)
+            console.log('Content:', ref.current.getJSONContent())
+            localStorage.setItem(
+              'editor-content',
+              JSON.stringify(ref.current.getJSONContent()),
+            )
           }}
           {...props}
           placeholder="Type your message here"
@@ -69,4 +74,15 @@ const EditorContainer: React.FC<Partial<EditorProps>> = (props) => {
   )
 }
 
+const TimelineEditorPreviewComponent = () => {
+  return (
+    <TimelineEditorPreview
+      initialValue={localStorage.getItem('editor-content')}
+    />
+  )
+}
+
 storiesOf('TimelineEditor', module).add('basic', () => <EditorContainer />)
+storiesOf('TimelineEditor', module).add('preview', () => (
+  <TimelineEditorPreviewComponent />
+))

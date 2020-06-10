@@ -18,7 +18,7 @@ function domToString(dom: DocumentFragment) {
 }
 
 function linebreak(str) {
-  const output = str.replace(/<\s?(p|br)[^<]*>/gi, function(x, tag) {
+  const output = str.replace(/<\s?(p|br)[^<]*>/gi, function (x, tag) {
     switch (tag.toLowerCase()) {
       case 'p':
         return '\n'
@@ -83,6 +83,7 @@ export interface EditorAPI {
   setContent(html: string): void
   appendContent(html: string): void
   clearState(): void
+  getJSONContent(): void
 }
 
 export function createAPI(ref: RefObject<ProseMirrorInstance>): EditorAPI {
@@ -134,6 +135,10 @@ export function createAPI(ref: RefObject<ProseMirrorInstance>): EditorAPI {
       }
       const { view, initialState } = ref.current
       return view.state !== initialState
+    },
+    getJSONContent() {
+      const view = this.view()
+      return view?.state.doc.toJSON()
     },
   }
 }

@@ -45,6 +45,24 @@ interface CreateProseMirrorOptions {
   directEditorProps?: Omit<DirectEditorProps<Schema>, 'state'>
 }
 
+export function createDocument(content: string) {
+  const el = document.createElement('div')
+  el.innerHTML = content || ''
+
+  if (typeof content === 'string') {
+    try {
+      return schema.nodeFromJSON(JSON.parse(content))
+    } catch (error) {
+      console.log('error:', error)
+      const element = document.createElement('div')
+      element.innerHTML = content.trim()
+      return DOMParser.fromSchema(schema).parse(element)
+    }
+  }
+
+  return DOMParser.fromSchema(schema).parse(el)
+}
+
 export function createProseMirror({
   initialValue,
   className,
@@ -59,7 +77,7 @@ export function createProseMirror({
   const view = new BaseEditorView(undefined, {
     ...directEditorProps,
     state: BaseEditorState.create({
-      doc: DOMParser.fromSchema(schema).parse(el),
+      doc: createDocument(initialValue as string),
       plugins: [
         ...setup({ schema, className, placeholder }),
         new BasePlugin({
