@@ -23,6 +23,7 @@ import {
 import schema, { Schema } from './schema'
 import { Command } from './commands'
 import { setup } from './plugins'
+import { sendableSteps } from 'prosemirror-collab'
 
 export type EditorView = BaseEditorView<Schema>
 export type EditorState = BaseEditorState<Schema>
@@ -79,7 +80,7 @@ export function createProseMirror({
     state: BaseEditorState.create({
       doc: createDocument(initialValue as string),
       plugins: [
-        ...setup({ schema, className, placeholder }),
+        ...setup({ schema, className, placeholder }, true, '123123', 12),
         new BasePlugin({
           view: () => ({
             update: () => {
@@ -140,7 +141,8 @@ export const ProseMirror = forwardRef<
         dispatchTransaction: (transaction) => {
           const editorState = proseMirror.view.state.apply(transaction)
           proseMirror.view.updateState(editorState)
-
+          let sendable = sendableSteps(editorState)
+          console.log('sendable:', sendable)
           if (onChange && transaction.docChanged) {
             onChange(proseMirror.view)
           }

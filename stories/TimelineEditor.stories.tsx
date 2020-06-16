@@ -57,7 +57,6 @@ const EditorContainer: React.FC<Partial<EditorProps>> = (props) => {
       <div style={{ marginTop: 20 }}>
         <TimelineEditor
           onChange={(view) => {
-            console.log('Content:', ref.current.getJSONContent())
             localStorage.setItem(
               'editor-content',
               JSON.stringify(ref.current.getJSONContent()),

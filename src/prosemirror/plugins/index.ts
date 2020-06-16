@@ -8,6 +8,12 @@ import {
   liftEmptyBlock,
   splitBlockKeepMarks,
 } from 'prosemirror-commands'
+import {
+  collab,
+  receiveTransaction,
+  sendableSteps,
+  getVersion,
+} from 'prosemirror-collab'
 import { Plugin } from 'prosemirror-state'
 import { dropCursor } from 'prosemirror-dropcursor'
 import { gapCursor } from 'prosemirror-gapcursor'
@@ -20,8 +26,13 @@ import linkify from './linkify'
 import placeholder from './placeholder'
 import newlinePreserveMarksPlugin from './newline-preserve-marks'
 
-export function setup(options) {
-  return [
+export function setup(
+  options,
+  colab?: boolean,
+  clientID?: string,
+  version?: number,
+) {
+  let plugins = [
     buildInputRules(options.schema),
     keymap(buildKeymap(options.schema, options.mapKeys)),
     newlinePreserveMarksPlugin(),
@@ -46,4 +57,8 @@ export function setup(options) {
       },
     }),
   ]
+  if (colab) {
+    plugins.push(collab({ clientID: clientID, version }))
+  }
+  return plugins
 }
