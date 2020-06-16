@@ -121,6 +121,7 @@ interface ProseMirrorProps {
   placeholder?: string
   children: (ref: Ref) => ReactNode
   onChange?: (editorView: EditorView) => void
+  realtimeEnabled?: boolean
 }
 
 export const ProseMirror = forwardRef<

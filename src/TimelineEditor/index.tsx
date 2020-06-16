@@ -30,6 +30,7 @@ export interface EditorProps {
   onChange?: (view: EditorView) => void
   onFocus?: FocusEventHandler<HTMLDivElement>
   onBlur?: FocusEventHandler<HTMLDivElement>
+  realtimeEnabled?: boolean
 }
 
 const Editor: ForwardRefRenderFunction<EditorAPI, EditorProps> = (
@@ -42,6 +43,7 @@ const Editor: ForwardRefRenderFunction<EditorAPI, EditorProps> = (
     onChange,
     onFocus,
     onBlur,
+    realtimeEnabled,
     ...other
   },
   ref,
@@ -74,6 +76,7 @@ const Editor: ForwardRefRenderFunction<EditorAPI, EditorProps> = (
   return (
     <ProseMirror
       onChange={onChange}
+      realtimeEnabled={realtimeEnabled}
       className={editorClassName}
       initialValue={initialValue}
       placeholder={placeholder || ''}
