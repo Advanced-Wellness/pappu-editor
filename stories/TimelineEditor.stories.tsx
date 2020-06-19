@@ -62,6 +62,7 @@ const EditorContainer: React.FC<Partial<EditorProps>> = (props) => {
               JSON.stringify(ref.current.getJSONContent()),
             )
           }}
+          realtimeEnabled={true}
           {...props}
           placeholder="Type your message here"
           ref={ref}

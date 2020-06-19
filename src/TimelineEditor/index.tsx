@@ -1,20 +1,6 @@
-import React, {
-  forwardRef,
-  useRef,
-  useCallback,
-  useImperativeHandle,
-  FocusEventHandler,
-  ForwardRefRenderFunction,
-} from 'react'
+import React, { forwardRef, useRef, useCallback, useImperativeHandle, FocusEventHandler, ForwardRefRenderFunction } from 'react'
 
-import {
-  ProseMirror,
-  ProseMirrorInstance,
-  EditorView,
-  Ref,
-  createAPI,
-  EditorAPI,
-} from '../prosemirror'
+import { ProseMirror, ProseMirrorInstance, EditorView, Ref, createAPI, EditorAPI } from '../prosemirror'
 import isMobile from 'ismobilejs'
 import MobileLayout from './MobileLayout'
 import DesktopLayout from './DesktopLayout'
@@ -34,19 +20,8 @@ export interface EditorProps {
 }
 
 const Editor: ForwardRefRenderFunction<EditorAPI, EditorProps> = (
-  {
-    className,
-    editorClassName,
-    desktopMenuClassName,
-    initialValue,
-    placeholder,
-    onChange,
-    onFocus,
-    onBlur,
-    realtimeEnabled,
-    ...other
-  },
-  ref,
+  { className, editorClassName, desktopMenuClassName, initialValue, placeholder, onChange, onFocus, onBlur, realtimeEnabled, ...other },
+  ref
 ) => {
   const proseMirrorRef = useRef<ProseMirrorInstance>(null)
 
@@ -60,28 +35,16 @@ const Editor: ForwardRefRenderFunction<EditorAPI, EditorProps> = (
           {element}
         </MobileLayout>
       ) : (
-        <DesktopLayout
-          className={className}
-          menuClassName={desktopMenuClassName}
-          onFocus={onFocus}
-          onBlur={onBlur}
-        >
+        <DesktopLayout className={className} menuClassName={desktopMenuClassName} onFocus={onFocus} onBlur={onBlur}>
           {element}
         </DesktopLayout>
       )
     },
-    [className, desktopMenuClassName, onFocus, onBlur],
+    [className, desktopMenuClassName, onFocus, onBlur]
   )
 
   return (
-    <ProseMirror
-      onChange={onChange}
-      realtimeEnabled={realtimeEnabled}
-      className={editorClassName}
-      initialValue={initialValue}
-      placeholder={placeholder || ''}
-      ref={proseMirrorRef}
-    >
+    <ProseMirror onChange={onChange} className={editorClassName} initialValue={initialValue} placeholder={placeholder || ''} ref={proseMirrorRef} realtimeEnabled={realtimeEnabled}>
       {render}
     </ProseMirror>
   )
