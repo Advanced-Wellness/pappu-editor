@@ -1,19 +1,7 @@
 import { keymap } from 'prosemirror-keymap'
 import { history } from 'prosemirror-history'
-import {
-  baseKeymap,
-  chainCommands,
-  newlineInCode,
-  createParagraphNear,
-  liftEmptyBlock,
-  splitBlockKeepMarks,
-} from 'prosemirror-commands'
-import {
-  collab,
-  receiveTransaction,
-  sendableSteps,
-  getVersion,
-} from 'prosemirror-collab'
+import { baseKeymap, chainCommands, newlineInCode, createParagraphNear, liftEmptyBlock, splitBlockKeepMarks } from 'prosemirror-commands'
+import { collab, receiveTransaction, sendableSteps, getVersion } from 'prosemirror-collab'
 import { Plugin } from 'prosemirror-state'
 import { dropCursor } from 'prosemirror-dropcursor'
 import { gapCursor } from 'prosemirror-gapcursor'
@@ -26,24 +14,14 @@ import linkify from './linkify'
 import placeholder from './placeholder'
 import newlinePreserveMarksPlugin from './newline-preserve-marks'
 
-export function setup(
-  options,
-  colab?: boolean,
-  clientID?: string,
-  version?: number,
-) {
+export function setup(options, colab?: boolean, clientID?: number, version?: number) {
   let plugins = [
     buildInputRules(options.schema),
     keymap(buildKeymap(options.schema, options.mapKeys)),
     newlinePreserveMarksPlugin(),
     keymap({
       ...baseKeymap,
-      Enter: chainCommands(
-        newlineInCode,
-        createParagraphNear,
-        liftEmptyBlock,
-        splitBlockKeepMarks,
-      ),
+      Enter: chainCommands(newlineInCode, createParagraphNear, liftEmptyBlock, splitBlockKeepMarks)
     }),
     dropCursor(),
     gapCursor(),
@@ -53,9 +31,9 @@ export function setup(
     history(),
     new Plugin({
       props: {
-        attributes: { class: cn('content', options.className) },
-      },
-    }),
+        attributes: { class: cn('content', options.className) }
+      }
+    })
   ]
   if (colab) {
     plugins.push(collab({ clientID: clientID, version }))

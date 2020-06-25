@@ -1,13 +1,14 @@
 import React, { ReactNode, useEffect, useState, createContext, useCallback, useContext, forwardRef, useImperativeHandle } from 'react'
 import { DOMParser } from 'prosemirror-model'
 import { Plugin as BasePlugin, EditorState as BaseEditorState, Transaction as BaseTransaction } from 'prosemirror-state'
-
 import { EditorView as BaseEditorView, DirectEditorProps } from 'prosemirror-view'
+import { Step } from 'prosemirror-transform'
+import applyDevTools from 'prosemirror-dev-tools'
 
 import schema, { Schema } from './schema'
 import { Command } from './commands'
 import { setup } from './plugins'
-import { sendableSteps } from 'prosemirror-collab'
+import { sendableSteps, getVersion, receiveTransaction } from 'prosemirror-collab'
 import SocketClient from 'socket.io-client'
 
 export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorProps>((props, ref) => {
@@ -26,11 +27,12 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
           autoConnect: true,
           path: '/aw'
         })
+        const myClientID = Math.floor(Math.random() * 0xffffffff)
         Socket.emit('GIVE_ME_DOC', '123', (status: boolean, version: number, initialContent: string) => {
           if (status) {
             proseMirror = createProseMirror({
               initialContent,
-              clientID: 'MrFambo',
+              clientID: myClientID,
               version,
               realtimeEnabled,
               className,
@@ -40,8 +42,19 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
                 dispatchTransaction: (transaction) => {
                   const editorState = proseMirror.view.state.apply(transaction)
                   proseMirror.view.updateState(editorState)
-                  let sendable = sendableSteps(editorState)
-                  console.log('sendable:', sendable)
+
+                  const sendable = sendableSteps(editorState)
+                  if (sendable) {
+                    var steps = sendable.steps.map((s) => s.toJSON())
+                    Socket.emit('NEW_STEPS', { ...sendable, steps }, '123', (status: boolean, doc: string, version: number) => {
+                      if (status) {
+                        console.log('Changes Applied')
+                      } else {
+                        console.log('Changes Broke up')
+                      }
+                    })
+                  }
+
                   if (onChange && transaction.docChanged) {
                     onChange(proseMirror.view)
                   }
@@ -50,6 +63,25 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
             })
             setInstance(proseMirror)
           }
+          Socket.on('NEW_STEPS_RECIEVED', (data: any) => {
+            const state = proseMirror.view.state
+            console.log('NEW_STEPS_RECIEVED:', data.steps, data.version, data.oldVersion, getVersion(state), data.clientIDs)
+            if (getVersion(state) > data.version) {
+              return
+            }
+            if (data.oldVersion !== getVersion(state)) {
+              console.warn('Old Version Error')
+              return
+            }
+            console.log('Applying')
+            proseMirror.view.dispatch(
+              receiveTransaction(
+                state,
+                data.steps.map((s: { [key: string]: any }) => Step.fromJSON(schema, s)),
+                data.clientIDs
+              )
+            )
+          })
         })
       } else {
         proseMirror = createProseMirror({
@@ -131,6 +163,7 @@ export function createProseMirror({
       ]
     })
   })
+  applyDevTools(view)
 
   function subscribe(callback: () => any) {
     callbacks.push(callback)
@@ -164,7 +197,7 @@ export function createDocument(content: string) {
       return DOMParser.fromSchema(schema).parse(element)
     }
   }
-
+  console.log('DOMParser.fromSchema(schema).parse(el):', DOMParser.fromSchema(schema).parse(el))
   return DOMParser.fromSchema(schema).parse(el)
 }
 
@@ -201,6 +234,19 @@ export function useProseMirrorState<T>(mapState: (state: EditorState, view: Edit
   return [value, applyCommand, view]
 }
 
+function debounce(fn: Function, delay: number) {
+  let timeout
+  return function (...args) {
+    if (timeout) {
+      clearTimeout(timeout)
+    }
+    timeout = setTimeout(() => {
+      fn(...args)
+      timeout = null
+    }, delay)
+  }
+}
+
 ProseMirror.displayName = 'ProseMirror'
 // Types and interfaces
 export type EditorView = BaseEditorView<Schema>
@@ -234,5 +280,12 @@ interface CreateProseMirrorOptions {
   realtimeEnabled?: boolean
   initialContent?: string
   version?: number
-  clientID?: string
+  clientID?: number
+}
+
+interface sendable {
+  version: number
+  steps: Step<Schema>[]
+  clientID: React.ReactText
+  origins: BaseTransaction[]
 }
