@@ -1,8 +1,8 @@
 import React, { ReactNode, useEffect, useState, createContext, useCallback, useContext, forwardRef, useImperativeHandle } from 'react'
 import { DOMParser } from 'prosemirror-model'
-import { Plugin as BasePlugin, EditorState as BaseEditorState, Transaction as BaseTransaction } from 'prosemirror-state'
-import { EditorView as BaseEditorView, DirectEditorProps } from 'prosemirror-view'
-import { Step } from 'prosemirror-transform'
+import { Plugin as BasePlugin, EditorState as BaseEditorState, Transaction as BaseTransaction, PluginKey } from 'prosemirror-state'
+import { EditorView as BaseEditorView, DirectEditorProps, Decoration, DecorationSet } from 'prosemirror-view'
+import { Step, Transform } from 'prosemirror-transform'
 import applyDevTools from 'prosemirror-dev-tools'
 
 import schema, { Schema } from './schema'
@@ -10,6 +10,7 @@ import { Command } from './commands'
 import { setup } from './plugins'
 import { sendableSteps, getVersion, receiveTransaction } from 'prosemirror-collab'
 import SocketClient from 'socket.io-client'
+import syncCursorPlugin from './plugins/syncCursor'
 
 export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorProps>((props, ref) => {
   const { className, initialValue, children, placeholder, onChange, realtimeEnabled } = props
@@ -22,18 +23,20 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
 
     const createprosemirror = () => {
       if (realtimeEnabled) {
-        const Socket = SocketClient('http://localhost:8080/prose', {
+        const Socket = SocketClient('http://192.168.1.8:8080/prose', {
           transports: ['websocket', 'polling', 'flashsocket'],
           autoConnect: true,
           path: '/aw'
         })
         const myClientID = Math.floor(Math.random() * 0xffffffff)
-        Socket.emit('GIVE_ME_DOC', '123', (status: boolean, version: number, initialContent: string) => {
+        let timeoutFunction: any = null
+        Socket.emit('GIVE_ME_DOC', '123', myClientID, (status: boolean, version: number, initialContent: string) => {
           if (status) {
             proseMirror = createProseMirror({
               initialContent,
               clientID: myClientID,
               version,
+              socket: Socket,
               realtimeEnabled,
               className,
               initialValue,
@@ -44,15 +47,54 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
                   proseMirror.view.updateState(editorState)
 
                   const sendable = sendableSteps(editorState)
+
                   if (sendable) {
-                    var steps = sendable.steps.map((s) => s.toJSON())
-                    Socket.emit('NEW_STEPS', { ...sendable, steps }, '123', (status: boolean, doc: string, version: number) => {
-                      if (status) {
-                        console.log('Changes Applied')
-                      } else {
-                        console.log('Changes Broke up')
+                    clearTimeout(timeoutFunction)
+                    timeoutFunction = setTimeout(() => {
+                      const sendable = sendableSteps(proseMirror.view.state)
+                      console.log('sendable:', sendable)
+                      if (sendable) {
+                        var steps = sendable.steps.map((s) => s.toJSON())
+                        let gettingNewVersion = false
+                        const sendUpdate = () => {
+                          Socket.emit('NEW_STEPS', getVersion(proseMirror.view.state), steps, myClientID, '123', (status: boolean, remoteVersion: number) => {
+                            if (!status) {
+                              console.log('OMG NEW STEP CLASH ON SERVER')
+                              Socket.emit('GIVE_ME_CHANGES_SINCE_VERSION', getVersion(proseMirror.view.state), (status: boolean, steps: any[]) => {
+                                console.log('NEW CHANGES FROM SERVER:', status, steps)
+                                if (status) {
+                                  let doc = proseMirror.view.state.doc
+                                  let validSteps: Step[] = []
+                                  let clientIDs: any[] = []
+                                  steps.map((s) => {
+                                    const scopy = s
+                                    s = Step.fromJSON(schema, s)
+                                    let applied = s.apply(doc)
+                                    console.log('applied:', applied, scopy.clientID, s, scopy)
+                                    if (applied.doc && !applied.failed) {
+                                      doc = applied.doc
+                                      validSteps.push(s)
+                                      clientIDs.push(scopy.clientID)
+                                    } else {
+                                      console.warn('REBASE ERROR:', applied.failed)
+                                    }
+                                  })
+                                  const updatedState = proseMirror.view.state.apply(receiveTransaction(proseMirror.view.state, validSteps, clientIDs))
+                                  if (!gettingNewVersion) {
+                                    gettingNewVersion = true
+                                    proseMirror.view.updateState(updatedState)
+                                    // sendUpdate()
+                                  } else {
+                                    console.error('Please refresh page')
+                                  }
+                                }
+                              })
+                            }
+                          })
+                        }
+                        sendUpdate()
                       }
-                    })
+                    }, 250)
                   }
 
                   if (onChange && transaction.docChanged) {
@@ -63,24 +105,44 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
             })
             setInstance(proseMirror)
           }
-          Socket.on('NEW_STEPS_RECIEVED', (data: any) => {
-            const state = proseMirror.view.state
-            console.log('NEW_STEPS_RECIEVED:', data.steps, data.version, data.oldVersion, getVersion(state), data.clientIDs)
-            if (getVersion(state) > data.version) {
-              return
-            }
-            if (data.oldVersion !== getVersion(state)) {
-              console.warn('Old Version Error')
-              return
-            }
-            console.log('Applying')
-            proseMirror.view.dispatch(
-              receiveTransaction(
-                state,
-                data.steps.map((s: { [key: string]: any }) => Step.fromJSON(schema, s)),
-                data.clientIDs
+
+          Socket.on('NEW_STEPS_RECIEVED', (data: { steps: any[]; clientID: number; versionHistory: number }) => {
+            console.log('NEW_STEPS_RECIEVED:', data, getVersion(proseMirror.view.state), data.steps)
+
+            if (getVersion(proseMirror.view.state) === data.versionHistory) {
+              const clientIDs = Array(data.steps.length).fill(`${data.clientID}`)
+              const updatedState = proseMirror.view.state.apply(
+                receiveTransaction(
+                  proseMirror.view.state,
+                  data.steps.map((s: { [key: string]: any }) => Step.fromJSON(schema, s)),
+                  clientIDs
+                )
               )
-            )
+              proseMirror.view.updateState(updatedState)
+            } else {
+              console.log('GIVE_ME_CHANGES')
+              Socket.emit('GIVE_ME_CHANGES_SINCE_VERSION', getVersion(proseMirror.view.state), (status: boolean, steps: any[]) => {
+                if (status) {
+                  let doc = proseMirror.view.state.doc
+                  let validSteps: Step[] = []
+                  let clientIDs: any[] = []
+                  steps.map((s) => {
+                    s = Step.fromJSON(schema, s)
+                    console.log('s:', s.clientID, s)
+                    let applied = s.apply(doc)
+                    console.log('applied:', applied)
+                    if (applied.doc && !applied.failed) {
+                      doc = applied.doc
+                      validSteps.push(s)
+                      clientIDs.push(s.clientID)
+                    } else {
+                      console.warn('REBASE ERROR:', applied.failed)
+                    }
+                  })
+                  proseMirror.view.dispatch(receiveTransaction(proseMirror.view.state, validSteps, clientIDs))
+                }
+              })
+            }
           })
         })
       } else {
@@ -138,31 +200,39 @@ export function createProseMirror({
   realtimeEnabled,
   version,
   clientID,
-  directEditorProps = {}
+  socket,
+  directEditorProps = {},
+  cursorSyncPlugin
 }: CreateProseMirrorOptions): ProseMirrorInstance {
   const callbacks: Array<() => any> = []
 
   const el = document.createElement('div')
   el.innerHTML = initialValue || ''
   const content: string = realtimeEnabled ? (initialContent as string) : (initialValue as string)
+  let plugin = [
+    ...setup({ schema, className, placeholder }, realtimeEnabled, clientID, version, socket),
+    new BasePlugin({
+      view: () => ({
+        update: () => {
+          for (const callback of callbacks) {
+            callback()
+          }
+        }
+      })
+    }),
+    syncCursorPlugin(socket as SocketIOClient.Socket, clientID as number)
+  ]
+  if (cursorSyncPlugin) {
+    plugin.push(cursorSyncPlugin)
+  }
   const view = new BaseEditorView(undefined, {
     ...directEditorProps,
     state: BaseEditorState.create({
       doc: createDocument(content),
-      plugins: [
-        ...setup({ schema, className, placeholder }, realtimeEnabled, clientID, version),
-        new BasePlugin({
-          view: () => ({
-            update: () => {
-              for (const callback of callbacks) {
-                callback()
-              }
-            }
-          })
-        })
-      ]
+      plugins: plugin
     })
   })
+
   applyDevTools(view)
 
   function subscribe(callback: () => any) {
@@ -281,6 +351,8 @@ interface CreateProseMirrorOptions {
   initialContent?: string
   version?: number
   clientID?: number
+  socket?: SocketIOClient.Socket
+  cursorSyncPlugin?: BasePlugin<any, any> | null
 }
 
 interface sendable {

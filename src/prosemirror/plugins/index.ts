@@ -14,7 +14,7 @@ import linkify from './linkify'
 import placeholder from './placeholder'
 import newlinePreserveMarksPlugin from './newline-preserve-marks'
 
-export function setup(options, colab?: boolean, clientID?: number, version?: number) {
+export function setup(options, colab?: boolean, clientID?: number, version?: number, socket?: SocketIOClient.Socket) {
   let plugins = [
     buildInputRules(options.schema),
     keymap(buildKeymap(options.schema, options.mapKeys)),
@@ -27,7 +27,7 @@ export function setup(options, colab?: boolean, clientID?: number, version?: num
     gapCursor(),
     linkify,
     placeholder(options.placeholder),
-    select,
+    select(socket as SocketIOClient.Socket),
     history(),
     new Plugin({
       props: {

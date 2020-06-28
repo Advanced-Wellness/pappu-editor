@@ -7,11 +7,7 @@ import { Plugin, PluginKey, Transaction, EditorState } from 'prosemirror-state'
 
 const key = new PluginKey('selection-highlight')
 
-function decorationsReducer(
-  transaction: Transaction,
-  state: DecorationSet,
-  editorState: EditorState,
-): DecorationSet {
+function decorationsReducer(transaction: Transaction, state: DecorationSet, editorState: EditorState): DecorationSet {
   if (!transaction.docChanged && !transaction.selectionSet) {
     return state
   }
@@ -19,8 +15,8 @@ function decorationsReducer(
   const { selection } = transaction
   return DecorationSet.create(editorState.doc, [
     Decoration.inline(selection.$from.pos, selection.$to.pos, {
-      class: 'selection-marker',
-    }),
+      class: 'selection-marker'
+    })
   ])
 }
 
@@ -31,60 +27,59 @@ function focusedReducer(transaction: Transaction, state: boolean) {
   return typeof focused === 'boolean' ? focused : state
 }
 
-const SelectPlugin = new Plugin({
-  state: {
-    init(config, instance) {
-      return {
-        decorations: DecorationSet.empty,
-        focused: false,
-      }
-    },
-    apply(transaction, state, prevEditorState, editorState) {
-      const decorations = decorationsReducer(
-        transaction,
-        state.decorations,
-        editorState,
-      )
-      const focused = focusedReducer(transaction, state.focused)
-
-      if (state.decorations === decorations && state.focused === focused) {
-        return state
-      }
-
-      return {
-        decorations,
-        focused,
-      }
-    },
-  },
-  props: {
-    handleDOMEvents: {
-      blur(view) {
-        view.dispatch(view.state.tr.setMeta(key, false))
-        return false
+const SelectPlugin = (socket: SocketIOClient.Socket): Plugin => {
+  return new Plugin({
+    state: {
+      init(config, instance) {
+        return {
+          decorations: DecorationSet.empty,
+          focused: false
+        }
       },
-      focus(view) {
-        view.dispatch(view.state.tr.setMeta(key, true))
-        return false
-      },
-    },
-    decorations(this: Plugin, state) {
-      if (!state) {
-        return null
-      }
+      apply(transaction, state, prevEditorState, editorState) {
+        const decorations = decorationsReducer(transaction, state.decorations, editorState)
+        const focused = focusedReducer(transaction, state.focused)
 
-      const pluginState = this.getState(state)
-      if (
-        !pluginState ||
-        // decorations prevent IE drag-selection, so disable decorations when editor is focused
-        pluginState.focused
-      ) {
-        return null
-      }
+        if (state.decorations === decorations && state.focused === focused) {
+          return state
+        }
 
-      return pluginState.decorations
+        return {
+          decorations,
+          focused
+        }
+      }
     },
-  },
-})
+    props: {
+      handleDOMEvents: {
+        blur(view) {
+          view.dispatch(view.state.tr.setMeta(key, false))
+          socket.emit('USER_CURSOR_UPDATE', null, '123')
+          return false
+        },
+        focus(view) {
+          view.dispatch(view.state.tr.setMeta(key, true))
+          return false
+        }
+      }
+      // decorations(this: Plugin, state) {
+      //   if (!state) {
+      //     return null
+      //   }
+
+      //   const pluginState = this.getState(state)
+      //   if (
+      //     !pluginState ||
+      //     // decorations prevent IE drag-selection, so disable decorations when editor is focused
+      //     pluginState.focused
+      //   ) {
+      //     return null
+      //   }
+
+      //   return pluginState.decorations
+      // }
+    }
+  })
+}
 
 export default SelectPlugin
