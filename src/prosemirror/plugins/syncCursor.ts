@@ -13,13 +13,17 @@ const createCursorDecorations = (state: EditorState, ourSocketID: string, myClie
   let decorations: Decoration[] = []
   Object.keys(newDecorations).forEach((id) => {
     if (id !== ourSocketID && newDecorations[id].cursor !== null) {
-      console.log('pushing Decoration')
-      decorations.push(
-        Decoration.widget(newDecorations[id].cursor, () => defaultCursorBuilder({ name: myClientID.toString(), color: 'orange' }), { key: `${myClientID.toString()}`, side: 10 })
-      )
+      console.log('pushing Decoration:', newDecorations[id].cursor, newDecorations)
+      const wid = Decoration.widget(newDecorations[id].cursor, () => defaultCursorBuilder({ name: myClientID.toString(), color: 'orange' }), {
+        key: `${myClientID.toString()}`,
+        side: 10
+      })
+      console.log('wid:', wid)
+      decorations.push(wid)
     }
   })
   appliedDecorations = newDecorations
+  console.log('dec:', decorations)
   return DecorationSet.create(state.doc, decorations)
 }
 
@@ -40,7 +44,7 @@ const syncCursor = (socket: SocketIOClient.Socket, myClientID: number): Plugin =
       apply(tr, prevState, oldState, newState) {
         const cursorState = tr.getMeta(syncCursorKey)
         if (cursorState && cursorState.cursorUpdated) {
-          console.log('tr')
+          console.log('tr:', cursorState)
           return createCursorDecorations(newState, socket.id, myClientID)
         }
         return prevState.map(tr.mapping, tr.doc)
