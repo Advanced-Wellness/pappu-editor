@@ -1,4 +1,4 @@
-import { Decoration, DecorationSet } from 'prosemirror-view'
+import { Decoration, DecorationSet, WidgetDecorationSpec } from 'prosemirror-view'
 import { Plugin, PluginKey, Transaction, EditorState } from 'prosemirror-state'
 import underscore from 'underscore'
 
@@ -10,12 +10,12 @@ let myLastSent: any = {}
 
 const createCursorDecorations = (state: EditorState, ourSocketID: string, myClientID: number): DecorationSet => {
   console.log('createCursorDecorations')
-  let decorations: Decoration[] = []
+  let decorations: Decoration<{ key: string; side: number } & WidgetDecorationSpec>[] = []
   Object.keys(newDecorations).forEach((id) => {
     if (id !== ourSocketID && newDecorations[id].cursor !== null) {
       console.log('pushing Decoration:', newDecorations[id].cursor, newDecorations)
       const wid = Decoration.widget(newDecorations[id].cursor, () => defaultCursorBuilder({ name: myClientID.toString(), color: 'orange' }), {
-        key: `${myClientID.toString()}`,
+        key: myClientID + '',
         side: 10
       })
       console.log('wid:', wid)
@@ -39,7 +39,6 @@ const syncCursor = (socket: SocketIOClient.Socket, myClientID: number): Plugin =
             state.apply(state.tr.setMeta(syncCursorKey, { cursorUpdated: true }))
           }
         })
-        return createCursorDecorations(state, socket.id, myClientID)
       },
       apply(tr, prevState, oldState, newState) {
         const cursorState = tr.getMeta(syncCursorKey)
@@ -47,7 +46,6 @@ const syncCursor = (socket: SocketIOClient.Socket, myClientID: number): Plugin =
           console.log('tr:', cursorState)
           return createCursorDecorations(newState, socket.id, myClientID)
         }
-        return prevState.map(tr.mapping, tr.doc)
       }
     },
     view: function () {

@@ -201,8 +201,7 @@ export function createProseMirror({
   version,
   clientID,
   socket,
-  directEditorProps = {},
-  cursorSyncPlugin
+  directEditorProps = {}
 }: CreateProseMirrorOptions): ProseMirrorInstance {
   const callbacks: Array<() => any> = []
 
@@ -222,9 +221,6 @@ export function createProseMirror({
     }),
     syncCursorPlugin(socket as SocketIOClient.Socket, clientID as number)
   ]
-  if (cursorSyncPlugin) {
-    plugin.push(cursorSyncPlugin)
-  }
   const view = new BaseEditorView(undefined, {
     ...directEditorProps,
     state: BaseEditorState.create({
