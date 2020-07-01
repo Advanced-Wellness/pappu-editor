@@ -1,8 +1,8 @@
 import React, { ReactNode, useEffect, useState, createContext, useCallback, useContext, forwardRef, useImperativeHandle } from 'react'
 import { DOMParser } from 'prosemirror-model'
-import { Plugin as BasePlugin, EditorState as BaseEditorState, Transaction as BaseTransaction, PluginKey } from 'prosemirror-state'
-import { EditorView as BaseEditorView, DirectEditorProps, Decoration, DecorationSet } from 'prosemirror-view'
-import { Step, Transform } from 'prosemirror-transform'
+import { Plugin as BasePlugin, EditorState as BaseEditorState, Transaction as BaseTransaction } from 'prosemirror-state'
+import { EditorView as BaseEditorView, DirectEditorProps } from 'prosemirror-view'
+import { Step } from 'prosemirror-transform'
 import applyDevTools from 'prosemirror-dev-tools'
 
 import schema, { Schema } from './schema'
@@ -23,21 +23,28 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
 
     const createprosemirror = () => {
       if (realtimeEnabled) {
-        const Socket = SocketClient('http://192.168.1.8:8080/prose', {
-          transports: ['websocket', 'polling', 'flashsocket'],
-          autoConnect: true,
-          path: '/aw'
-        })
-        Socket.on('disconnect', () => {
-          setInstance(null)
-        })
-        Socket.on('connect', () => {
-          const myClientID = Math.floor(Math.random() * 0xffffffff)
+        const initProsemirror = () => {
+          // Socket events
+          const initEvent = props.InitEvent ? props.InitEvent : 'GIVE_ME_DOC'
+          const DocumentRoomName = props.DocumentRoomName ? props.DocumentRoomName : '123'
+          const cursorUpdateEvent = props.CursorUpdateEvent ? props.CursorUpdateEvent : 'USER_CURSOR_UPDATE'
+          const selectionUpdateEvent = props.SelectionUpdateEvent ? props.SelectionUpdateEvent : 'USER_SELECTION_UPDATE'
+          const emitNewStepsEvent = props.EmitNewStepsEvent ? props.EmitNewStepsEvent : 'NEW_STEPS'
+          const getChangesEvent = props.GetChangesEvent ? props.GetChangesEvent : 'GIVE_ME_CHANGES_SINCE_VERSION'
+          const recieveUserUpdateEvent = props.RecieveUserUpdateEvent ? props.RecieveUserUpdateEvent : 'USER_UPDATED'
+          const receieveNewStepsEvent = props.RecieveNewStepsEvent ? props.RecieveNewStepsEvent : 'NEW_STEPS_RECIEVED'
+
+          const myClientID = props.ClientID ? props.ClientID : Math.floor(Math.random() * 0xffffffff)
+
+          // Default Flags
           let timeoutFunction: any = null
+          let selectionTimeout: any = null
+          let cursorTimeout: any = null
           let myLastCursor: null | number = null
           let myLastFrom: null | number = null
           let myLastTo: null | number = null
-          Socket.emit('GIVE_ME_DOC', '123', myClientID, (status: boolean, version: number, initialContent: string) => {
+
+          Socket.emit(initEvent, DocumentRoomName, myClientID, (status: boolean, version: number, initialContent: string) => {
             if (status) {
               proseMirror = createProseMirror({
                 initialContent,
@@ -55,13 +62,25 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
 
                     const sendable = sendableSteps(editorState)
 
-                    if (proseMirror.view.state.selection.anchor !== myLastCursor && proseMirror.view.hasFocus() && !sendable) {
-                      Socket.emit('USER_CURSOR_UPDATE', proseMirror.view.state.selection.anchor, '123')
+                    if (!transaction.getMeta(syncCursorKey) && proseMirror.view.state.selection.anchor !== myLastCursor && proseMirror.view.hasFocus() && !sendable) {
                       myLastCursor = proseMirror.view.state.selection.anchor
+                      clearTimeout(cursorTimeout)
+                      cursorTimeout = setTimeout(() => {
+                        Socket.emit(cursorUpdateEvent, proseMirror.view.state.selection.anchor, DocumentRoomName)
+                      }, 100)
                     }
 
-                    if ((proseMirror.view.state.selection.from !== myLastFrom || proseMirror.view.state.selection.to !== myLastTo) && proseMirror.view.hasFocus() && !sendable) {
-                      Socket.emit('USER_SELECTION_UPDATE', proseMirror.view.state.selection.from, proseMirror.view.state.selection.to, '123')
+                    if (
+                      !transaction.getMeta(syncCursorKey) &&
+                      (proseMirror.view.state.selection.from !== myLastFrom || proseMirror.view.state.selection.to !== myLastTo) &&
+                      proseMirror.view.hasFocus() &&
+                      !sendable
+                    ) {
+                      clearTimeout(selectionTimeout)
+                      selectionTimeout = setTimeout(() => {
+                        Socket.emit(selectionUpdateEvent, proseMirror.view.state.selection.from, proseMirror.view.state.selection.to, DocumentRoomName)
+                      }, 150)
+
                       myLastFrom = proseMirror.view.state.selection.from
                       myLastTo = proseMirror.view.state.selection.to
                     }
@@ -74,9 +93,9 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
                           var steps = sendable.steps.map((s) => s.toJSON())
                           let gettingNewVersion = false
                           const sendUpdate = () => {
-                            Socket.emit('NEW_STEPS', getVersion(proseMirror.view.state), steps, myClientID, '123', (status: boolean, remoteVersion: number) => {
+                            Socket.emit(emitNewStepsEvent, getVersion(proseMirror.view.state), steps, myClientID, DocumentRoomName, (status: boolean, remoteVersion: number) => {
                               if (!status) {
-                                Socket.emit('GIVE_ME_CHANGES_SINCE_VERSION', getVersion(proseMirror.view.state), (status: boolean, steps: any[]) => {
+                                Socket.emit(getChangesEvent, DocumentRoomName, getVersion(proseMirror.view.state), (status: boolean, steps: any[]) => {
                                   if (status) {
                                     let doc = proseMirror.view.state.doc
                                     let validSteps: Step[] = []
@@ -120,17 +139,16 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
               setInstance(proseMirror)
             }
 
-            Socket.on('USER_UPDATED', (users: any, socketid: string) => {
+            Socket.on(recieveUserUpdateEvent, (users: any, socketid: string) => {
               if (Socket.id !== socketid) {
                 const usersWithoutThisUser = Object.assign({}, users)
                 delete usersWithoutThisUser[Socket.id]
-                console.log('users:', usersWithoutThisUser)
                 let transaction = proseMirror.view.state.tr.setMeta(syncCursorKey, { users: usersWithoutThisUser })
                 proseMirror.view.dispatch(transaction)
               }
             })
 
-            Socket.on('NEW_STEPS_RECIEVED', (data: { steps: any[]; clientID: number; versionHistory: number }) => {
+            Socket.on(receieveNewStepsEvent, (data: { steps: any[]; clientID: number; versionHistory: number }) => {
               if (getVersion(proseMirror.view.state) === data.versionHistory) {
                 const clientIDs = Array(data.steps.length).fill(`${data.clientID}`)
                 const updatedState = proseMirror.view.state.apply(
@@ -142,7 +160,7 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
                 )
                 proseMirror.view.updateState(updatedState)
               } else {
-                Socket.emit('GIVE_ME_CHANGES_SINCE_VERSION', getVersion(proseMirror.view.state), (status: boolean, steps: any[]) => {
+                Socket.emit(getChangesEvent, DocumentRoomName, getVersion(proseMirror.view.state), (status: boolean, steps: any[]) => {
                   if (status) {
                     let doc = proseMirror.view.state.doc
                     let validSteps: Step[] = []
@@ -164,7 +182,30 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
               }
             })
           })
+        }
+        const Socket = props.Socket
+          ? props.Socket
+          : SocketClient(props.SocketURL ? props.SocketURL : 'http://localhost:8080/prose', {
+              transports: props.SocketTransports ? props.SocketTransports : ['websocket', 'polling', 'flashsocket'],
+              autoConnect: true,
+              path: props.SocketPath ? props.SocketPath : '/aw'
+            })
+        Socket.on('disconnect', () => {
+          if (proseMirror.view) {
+            proseMirror.view.destroy()
+          }
+          // TODO: This alert keeps coming and makes window to refresh on Google Chrome. We need react alert for it.
+          // window.alert('Your internet connection stopped working. Document sync failed! Check your internet connection')
+          setInstance(null)
         })
+        Socket.on('connect', () => {
+          // TODO: Same as above alert problem
+          // window.alert('Connected Successfully!')
+          initProsemirror()
+        })
+        if (Socket.connected) {
+          initProsemirror()
+        }
       } else {
         proseMirror = createProseMirror({
           realtimeEnabled,
@@ -277,13 +318,11 @@ export function createDocument(content: string) {
     try {
       return schema.nodeFromJSON(JSON.parse(content))
     } catch (error) {
-      console.log('error:', error)
       const element = document.createElement('div')
       element.innerHTML = content.trim()
       return DOMParser.fromSchema(schema).parse(element)
     }
   }
-  console.log('DOMParser.fromSchema(schema).parse(el):', DOMParser.fromSchema(schema).parse(el))
   return DOMParser.fromSchema(schema).parse(el)
 }
 
@@ -356,6 +395,19 @@ interface ProseMirrorProps {
   children: (ref: Ref) => ReactNode
   onChange?: (editorView: EditorView) => void
   realtimeEnabled?: boolean
+  ClientID?: number
+  Socket?: SocketIOClient.Socket
+  SocketURL?: string
+  SocketTransports?: string[]
+  SocketPath?: string
+  InitEvent?: string
+  DocumentRoomName?: string
+  CursorUpdateEvent?: string
+  SelectionUpdateEvent?: string
+  EmitNewStepsEvent?: string
+  GetChangesEvent?: string
+  RecieveUserUpdateEvent?: string
+  RecieveNewStepsEvent?: string
 }
 
 interface CreateProseMirrorOptions {
@@ -369,11 +421,4 @@ interface CreateProseMirrorOptions {
   clientID?: number
   socket?: SocketIOClient.Socket
   cursorSyncPlugin?: BasePlugin<any, any> | null
-}
-
-interface sendable {
-  version: number
-  steps: Step<Schema>[]
-  clientID: React.ReactText
-  origins: BaseTransaction[]
 }

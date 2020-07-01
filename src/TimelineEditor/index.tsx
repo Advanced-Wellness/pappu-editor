@@ -17,10 +17,47 @@ export interface EditorProps {
   onFocus?: FocusEventHandler<HTMLDivElement>
   onBlur?: FocusEventHandler<HTMLDivElement>
   realtimeEnabled?: boolean
+  ClientID?: number
+  Socket?: SocketIOClient.Socket
+  SocketURL?: string
+  SocketTransports?: string[]
+  SocketPath?: string
+  InitEvent?: string
+  DocumentRoomName?: string
+  CursorUpdateEvent?: string
+  SelectionUpdateEvent?: string
+  EmitNewStepsEvent?: string
+  GetChangesEvent?: string
+  RecieveUserUpdateEvent?: string
+  RecieveNewStepsEvent?: string
 }
 
 const Editor: ForwardRefRenderFunction<EditorAPI, EditorProps> = (
-  { className, editorClassName, desktopMenuClassName, initialValue, placeholder, onChange, onFocus, onBlur, realtimeEnabled, ...other },
+  {
+    className,
+    editorClassName,
+    desktopMenuClassName,
+    initialValue,
+    placeholder,
+    onChange,
+    onFocus,
+    onBlur,
+    realtimeEnabled,
+    ClientID,
+    Socket,
+    SocketURL,
+    SocketTransports,
+    SocketPath,
+    InitEvent,
+    DocumentRoomName,
+    CursorUpdateEvent,
+    SelectionUpdateEvent,
+    EmitNewStepsEvent,
+    GetChangesEvent,
+    RecieveUserUpdateEvent,
+    RecieveNewStepsEvent,
+    ...other
+  },
   ref
 ) => {
   const proseMirrorRef = useRef<ProseMirrorInstance>(null)
@@ -44,7 +81,27 @@ const Editor: ForwardRefRenderFunction<EditorAPI, EditorProps> = (
   )
 
   return (
-    <ProseMirror onChange={onChange} className={editorClassName} initialValue={initialValue} placeholder={placeholder || ''} ref={proseMirrorRef} realtimeEnabled={realtimeEnabled}>
+    <ProseMirror
+      onChange={onChange}
+      className={editorClassName}
+      initialValue={initialValue}
+      placeholder={placeholder || ''}
+      ref={proseMirrorRef}
+      realtimeEnabled={realtimeEnabled}
+      ClientID={ClientID}
+      Socket={Socket}
+      SocketURL={SocketURL}
+      SocketTransports={SocketTransports}
+      SocketPath={SocketPath}
+      InitEvent={InitEvent}
+      DocumentRoomName={DocumentRoomName}
+      CursorUpdateEvent={CursorUpdateEvent}
+      SelectionUpdateEvent={SelectionUpdateEvent}
+      EmitNewStepsEvent={EmitNewStepsEvent}
+      GetChangesEvent={GetChangesEvent}
+      RecieveUserUpdateEvent={RecieveUserUpdateEvent}
+      RecieveNewStepsEvent={RecieveNewStepsEvent}
+    >
       {render}
     </ProseMirror>
   )

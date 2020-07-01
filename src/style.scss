@@ -127,6 +127,7 @@
 /* This renders the username above the caret */
 .ProseMirror-yjs-cursor > div {
   position: absolute;
+  opacity: 0.4;
   top: -1.05em;
   left: -1px;
   font-size: 13px;
@@ -136,7 +137,7 @@
   font-weight: normal;
   line-height: normal;
   user-select: none;
-  color: white;
+  color: black;
   padding-left: 2px;
   padding-right: 2px;
   white-space: nowrap;

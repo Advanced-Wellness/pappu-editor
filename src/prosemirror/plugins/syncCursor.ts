@@ -1,6 +1,5 @@
-import { Decoration, DecorationSet, WidgetDecorationSpec } from 'prosemirror-view'
-import { Plugin, PluginKey, Transaction, EditorState } from 'prosemirror-state'
-import underscore from 'underscore'
+import { Decoration, DecorationSet } from 'prosemirror-view'
+import { Plugin, PluginKey } from 'prosemirror-state'
 
 export const syncCursorKey = new PluginKey('syncCursor')
 
@@ -11,6 +10,7 @@ const syncPlugin = new Plugin({
     },
     apply(tr, value) {
       if (tr.getMeta(syncCursorKey)) {
+        console.log('syncCursor Plugin')
         const { users } = tr.getMeta(syncCursorKey)
         let decorations: any[] = []
         Object.keys(users).forEach((userSocketID) => {

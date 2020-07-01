@@ -27,10 +27,7 @@ const EditorContainer: React.FC<Partial<EditorProps>> = (props) => {
 
       <button
         onClick={() => {
-          action('set content')(
-            ref.current &&
-              ref.current.setContent('<p><b>I am</b> <em>set</em></p>'),
-          )
+          action('set content')(ref.current && ref.current.setContent('<p><b>I am</b> <em>set</em></p>'))
         }}
       >
         set content
@@ -38,10 +35,7 @@ const EditorContainer: React.FC<Partial<EditorProps>> = (props) => {
 
       <button
         onClick={() => {
-          action('append content')(
-            ref.current &&
-              ref.current.appendContent('<p><b>I am</b> <em>appended</em></p>'),
-          )
+          action('append content')(ref.current && ref.current.appendContent('<p><b>I am</b> <em>appended</em></p>'))
         }}
       >
         append content
@@ -56,11 +50,8 @@ const EditorContainer: React.FC<Partial<EditorProps>> = (props) => {
       </button>
       <div style={{ marginTop: 20 }}>
         <TimelineEditor
-          onChange={(view) => {
-            localStorage.setItem(
-              'editor-content',
-              JSON.stringify(ref.current.getJSONContent()),
-            )
+          onChange={() => {
+            localStorage.setItem('editor-content', JSON.stringify(ref.current.getJSONContent()))
           }}
           realtimeEnabled={true}
           {...props}
@@ -75,14 +66,8 @@ const EditorContainer: React.FC<Partial<EditorProps>> = (props) => {
 }
 
 const TimelineEditorPreviewComponent = () => {
-  return (
-    <TimelineEditorPreview
-      initialValue={localStorage.getItem('editor-content')}
-    />
-  )
+  return <TimelineEditorPreview initialValue={localStorage.getItem('editor-content')} />
 }
 
 storiesOf('TimelineEditor', module).add('basic', () => <EditorContainer />)
-storiesOf('TimelineEditor', module).add('preview', () => (
-  <TimelineEditorPreviewComponent />
-))
+storiesOf('TimelineEditor', module).add('preview', () => <TimelineEditorPreviewComponent />)
