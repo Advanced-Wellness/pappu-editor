@@ -44,8 +44,11 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
           let myLastFrom: null | number = null
           let myLastTo: null | number = null
 
-          Socket.emit(initEvent, DocumentRoomName, myClientID, (status: boolean, version: number, initialContent: string) => {
+          Socket.emit(initEvent, DocumentRoomName, myClientID, (status: boolean, stringifiedDocumentWithVersion: string) => {
             if (status) {
+              const document: DocumentFromServer = JSON.parse(stringifiedDocumentWithVersion)
+              const version = parseInt(document.version)
+              const initialContent = document.doc
               proseMirror = createProseMirror({
                 initialContent,
                 clientID: myClientID,
@@ -421,4 +424,9 @@ interface CreateProseMirrorOptions {
   clientID?: number
   socket?: SocketIOClient.Socket
   cursorSyncPlugin?: BasePlugin<any, any> | null
+}
+
+interface DocumentFromServer {
+  version: string
+  doc: string
 }
