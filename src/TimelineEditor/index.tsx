@@ -24,12 +24,10 @@ export interface EditorProps {
   SocketPath?: string
   InitEvent?: string
   DocumentRoomName?: string
-  CursorUpdateEvent?: string
-  SelectionUpdateEvent?: string
   EmitNewStepsEvent?: string
   GetChangesEvent?: string
-  RecieveUserUpdateEvent?: string
   RecieveNewStepsEvent?: string
+  HeartBeatPingEvent?: string
 }
 
 const Editor: ForwardRefRenderFunction<EditorAPI, EditorProps> = (
@@ -50,12 +48,10 @@ const Editor: ForwardRefRenderFunction<EditorAPI, EditorProps> = (
     SocketPath,
     InitEvent,
     DocumentRoomName,
-    CursorUpdateEvent,
-    SelectionUpdateEvent,
     EmitNewStepsEvent,
     GetChangesEvent,
-    RecieveUserUpdateEvent,
     RecieveNewStepsEvent,
+    HeartBeatPingEvent,
     ...other
   },
   ref
@@ -95,12 +91,10 @@ const Editor: ForwardRefRenderFunction<EditorAPI, EditorProps> = (
       SocketPath={SocketPath}
       InitEvent={InitEvent}
       DocumentRoomName={DocumentRoomName}
-      CursorUpdateEvent={CursorUpdateEvent}
-      SelectionUpdateEvent={SelectionUpdateEvent}
       EmitNewStepsEvent={EmitNewStepsEvent}
       GetChangesEvent={GetChangesEvent}
-      RecieveUserUpdateEvent={RecieveUserUpdateEvent}
       RecieveNewStepsEvent={RecieveNewStepsEvent}
+      HeartBeatPingEvent={HeartBeatPingEvent}
     >
       {render}
     </ProseMirror>

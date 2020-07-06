@@ -30,6 +30,7 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
           const emitNewStepsEvent = props.EmitNewStepsEvent ? props.EmitNewStepsEvent : 'NEW_STEPS'
           const getChangesEvent = props.GetChangesEvent ? props.GetChangesEvent : 'GIVE_ME_CHANGES_SINCE_VERSION'
           const receieveNewStepsEvent = props.RecieveNewStepsEvent ? props.RecieveNewStepsEvent : 'NEW_STEPS_RECIEVED'
+          const heartBeatPing = props.HeartBeatPingEvent ? props.HeartBeatPingEvent : 'I_AM_LIVE'
 
           const myClientID = props.ClientID ? props.ClientID : Math.floor(Math.random() * 0xffffffff)
 
@@ -127,19 +128,19 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
                   myLastCursor = proseMirror.view.state.selection.anchor
                   myLastTo = proseMirror.view.state.selection.to
                   myLastFrom = proseMirror.view.state.selection.from
-                  Socket.emit('I_AM_LIVE', DocumentRoomName, myLastCursor, myLastTo, myLastFrom, proseMirror.view.hasFocus())
+                  Socket.emit(heartBeatPing, DocumentRoomName, myLastCursor, myLastTo, myLastFrom, proseMirror.view.hasFocus())
                 }
               }
 
               const myPresenceEmittor = () => {
                 setTimeout(() => {
-                  Socket.emit('I_AM_LIVE', DocumentRoomName, myLastCursor, myLastTo, myLastFrom, proseMirror.view.hasFocus())
+                  Socket.emit(heartBeatPing, DocumentRoomName, myLastCursor, myLastTo, myLastFrom, proseMirror.view.hasFocus())
                   myPresenceEmittor()
                 }, 3000)
               }
               myPresenceEmittor()
 
-              Socket.on('I_AM_LIVE', (data: IAmLive) => {
+              Socket.on(heartBeatPing, (data: IAmLive) => {
                 if (data.documentID === DocumentRoomName && data.id !== Socket.id && data.focus) {
                   if (activeUsers[data.id] && activeUsers[data.id].timeout) clearTimeout(activeUsers[data.id].timeout)
                   activeUsers[data.id] = { ...data }
@@ -415,12 +416,10 @@ interface ProseMirrorProps {
   SocketPath?: string
   InitEvent?: string
   DocumentRoomName?: string
-  CursorUpdateEvent?: string
-  SelectionUpdateEvent?: string
   EmitNewStepsEvent?: string
   GetChangesEvent?: string
-  RecieveUserUpdateEvent?: string
   RecieveNewStepsEvent?: string
+  HeartBeatPingEvent?: string
 }
 
 interface CreateProseMirrorOptions {
