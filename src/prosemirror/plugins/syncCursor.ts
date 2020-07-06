@@ -10,20 +10,20 @@ const syncPlugin = new Plugin({
     },
     apply(tr, value) {
       if (tr.getMeta(syncCursorKey)) {
-        console.log('syncCursor Plugin')
+        console.log('syncCursor Plugin TR')
         const { users } = tr.getMeta(syncCursorKey)
         let decorations: any[] = []
         Object.keys(users).forEach((userSocketID) => {
           if (users[userSocketID].cursor) {
-            const w = Decoration.widget(users[userSocketID].cursor, () => defaultCursorBuilder({ color: 'orange', name: users[userSocketID].name }), {
+            const w = Decoration.widget(users[userSocketID].cursor, () => defaultCursorBuilder({ color: 'orange', name: users[userSocketID].fullName }), {
               key: users[userSocketID].name + '&CURSOR',
               side: 10
             })
             decorations.push(w)
-            if (users[userSocketID].selection && users[userSocketID].selection.from && users[userSocketID].selection.to) {
+            if (users[userSocketID].from && users[userSocketID].to && users[userSocketID].from !== users[userSocketID].to) {
               const selectionWidget = Decoration.inline(
-                users[userSocketID].selection.from,
-                users[userSocketID].selection.to,
+                users[userSocketID].from,
+                users[userSocketID].to,
                 { style: `background-color: silver` },
                 { inclusiveEnd: true, inclusiveStart: false }
               )
@@ -33,9 +33,10 @@ const syncPlugin = new Plugin({
         })
         return DecorationSet.create(tr.doc, decorations)
       } else {
+        console.log('value:', value)
         // map "other" changes so our decoration "stays put"
         // (e.g. user is typing so decoration's pos must change)
-        return value.map(tr.mapping, tr.doc)
+        if (value) return value.map(tr.mapping, tr.doc)
       }
     }
   },

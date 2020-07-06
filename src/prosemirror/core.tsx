@@ -27,32 +27,25 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
           // Socket events
           const initEvent = props.InitEvent ? props.InitEvent : 'GIVE_ME_DOC'
           const DocumentRoomName = props.DocumentRoomName ? props.DocumentRoomName : '123'
-          const cursorUpdateEvent = props.CursorUpdateEvent ? props.CursorUpdateEvent : 'USER_CURSOR_UPDATE'
-          const selectionUpdateEvent = props.SelectionUpdateEvent ? props.SelectionUpdateEvent : 'USER_SELECTION_UPDATE'
           const emitNewStepsEvent = props.EmitNewStepsEvent ? props.EmitNewStepsEvent : 'NEW_STEPS'
           const getChangesEvent = props.GetChangesEvent ? props.GetChangesEvent : 'GIVE_ME_CHANGES_SINCE_VERSION'
-          const recieveUserUpdateEvent = props.RecieveUserUpdateEvent ? props.RecieveUserUpdateEvent : 'USER_UPDATED'
           const receieveNewStepsEvent = props.RecieveNewStepsEvent ? props.RecieveNewStepsEvent : 'NEW_STEPS_RECIEVED'
 
           const myClientID = props.ClientID ? props.ClientID : Math.floor(Math.random() * 0xffffffff)
 
           // Default Flags
           let timeoutFunction: any = null
-          let selectionTimeout: any = null
-          let cursorTimeout: any = null
           let myLastCursor: null | number = null
           let myLastFrom: null | number = null
           let myLastTo: null | number = null
 
-          Socket.emit(initEvent, DocumentRoomName, myClientID, (status: boolean, stringifiedDocumentWithVersion: string) => {
+          Socket.emit(initEvent, DocumentRoomName, (status: boolean, DocumentWithVersion: DocumentFromServer) => {
             if (status) {
-              const document: DocumentFromServer = JSON.parse(stringifiedDocumentWithVersion)
-              const version = parseInt(document.version)
-              const initialContent = document.doc
+              const activeUsers: any = {}
               proseMirror = createProseMirror({
-                initialContent,
+                initialContent: DocumentWithVersion.doc,
                 clientID: myClientID,
-                version,
+                version: parseInt(DocumentWithVersion.version),
                 socket: Socket,
                 realtimeEnabled,
                 className,
@@ -64,29 +57,7 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
                     proseMirror.view.updateState(editorState)
 
                     const sendable = sendableSteps(editorState)
-
-                    if (!transaction.getMeta(syncCursorKey) && proseMirror.view.state.selection.anchor !== myLastCursor && proseMirror.view.hasFocus() && !sendable) {
-                      myLastCursor = proseMirror.view.state.selection.anchor
-                      clearTimeout(cursorTimeout)
-                      cursorTimeout = setTimeout(() => {
-                        Socket.emit(cursorUpdateEvent, proseMirror.view.state.selection.anchor, DocumentRoomName)
-                      }, 100)
-                    }
-
-                    if (
-                      !transaction.getMeta(syncCursorKey) &&
-                      (proseMirror.view.state.selection.from !== myLastFrom || proseMirror.view.state.selection.to !== myLastTo) &&
-                      proseMirror.view.hasFocus() &&
-                      !sendable
-                    ) {
-                      clearTimeout(selectionTimeout)
-                      selectionTimeout = setTimeout(() => {
-                        Socket.emit(selectionUpdateEvent, proseMirror.view.state.selection.from, proseMirror.view.state.selection.to, DocumentRoomName)
-                      }, 150)
-
-                      myLastFrom = proseMirror.view.state.selection.from
-                      myLastTo = proseMirror.view.state.selection.to
-                    }
+                    EmitCursorToEveryone(sendable)
 
                     if (sendable) {
                       clearTimeout(timeoutFunction)
@@ -123,14 +94,19 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
                                     } else {
                                       console.error('Please refresh page')
                                     }
+                                  } else {
+                                    setInstance(null)
+                                    alert('Document is out of sync, please refresh.')
                                   }
                                 })
+                              } else {
+                                EmitCursorToEveryone(sendableSteps(editorState))
                               }
                             })
                           }
                           sendUpdate()
                         }
-                      }, 250)
+                      }, 200)
                     }
 
                     if (onChange && transaction.docChanged) {
@@ -140,50 +116,84 @@ export const ProseMirror = forwardRef<ProseMirrorInstance | null, ProseMirrorPro
                 }
               })
               setInstance(proseMirror)
-            }
 
-            Socket.on(recieveUserUpdateEvent, (users: any, socketid: string) => {
-              if (Socket.id !== socketid) {
-                const usersWithoutThisUser = Object.assign({}, users)
-                delete usersWithoutThisUser[Socket.id]
-                let transaction = proseMirror.view.state.tr.setMeta(syncCursorKey, { users: usersWithoutThisUser })
-                proseMirror.view.dispatch(transaction)
+              const EmitCursorToEveryone = (sendable: any) => {
+                if (
+                  (myLastCursor !== proseMirror.view.state.selection.anchor ||
+                    myLastTo !== proseMirror.view.state.selection.to ||
+                    myLastFrom !== proseMirror.view.state.selection.from) &&
+                  !sendable
+                ) {
+                  myLastCursor = proseMirror.view.state.selection.anchor
+                  myLastTo = proseMirror.view.state.selection.to
+                  myLastFrom = proseMirror.view.state.selection.from
+                  Socket.emit('I_AM_LIVE', DocumentRoomName, myLastCursor, myLastTo, myLastFrom, proseMirror.view.hasFocus())
+                }
               }
-            })
 
-            Socket.on(receieveNewStepsEvent, (data: { steps: any[]; clientID: number; versionHistory: number }) => {
-              if (getVersion(proseMirror.view.state) === data.versionHistory) {
-                const clientIDs = Array(data.steps.length).fill(`${data.clientID}`)
-                const updatedState = proseMirror.view.state.apply(
-                  receiveTransaction(
-                    proseMirror.view.state,
-                    data.steps.map((s: { [key: string]: any }) => Step.fromJSON(schema, s)),
-                    clientIDs
+              const myPresenceEmittor = () => {
+                setTimeout(() => {
+                  Socket.emit('I_AM_LIVE', DocumentRoomName, myLastCursor, myLastTo, myLastFrom, proseMirror.view.hasFocus())
+                  myPresenceEmittor()
+                }, 3000)
+              }
+              myPresenceEmittor()
+
+              Socket.on('I_AM_LIVE', (data: IAmLive) => {
+                if (data.documentID === DocumentRoomName && data.id !== Socket.id && data.focus) {
+                  if (activeUsers[data.id] && activeUsers[data.id].timeout) clearTimeout(activeUsers[data.id].timeout)
+                  activeUsers[data.id] = { ...data }
+
+                  // Sending Decoration Transaction
+                  let transaction = proseMirror.view.state.tr.setMeta(syncCursorKey, { users: activeUsers })
+                  proseMirror.view.dispatch(transaction)
+
+                  // Setting expiry timeout, we must hear from this user within 6 seconds, otherwise we consider him offline
+                  activeUsers[data.id].timeout = setTimeout(() => {
+                    delete activeUsers[data.id]
+                    let transaction = proseMirror.view.state.tr.setMeta(syncCursorKey, { users: activeUsers })
+                    proseMirror.view.dispatch(transaction)
+                    // TODO: remove its decorations
+                  }, 5000)
+                }
+              })
+
+              Socket.on(receieveNewStepsEvent, (data: { steps: any[]; clientID: number; versionHistory: number }) => {
+                if (getVersion(proseMirror.view.state) === data.versionHistory) {
+                  const clientIDs = Array(data.steps.length).fill(`${data.clientID}`)
+                  const updatedState = proseMirror.view.state.apply(
+                    receiveTransaction(
+                      proseMirror.view.state,
+                      data.steps.map((s: { [key: string]: any }) => Step.fromJSON(schema, s)),
+                      clientIDs
+                    )
                   )
-                )
-                proseMirror.view.updateState(updatedState)
-              } else {
-                Socket.emit(getChangesEvent, DocumentRoomName, getVersion(proseMirror.view.state), (status: boolean, steps: any[]) => {
-                  if (status) {
-                    let doc = proseMirror.view.state.doc
-                    let validSteps: Step[] = []
-                    let clientIDs: any[] = []
-                    steps.map((s) => {
-                      s = Step.fromJSON(schema, s)
-                      let applied = s.apply(doc)
-                      if (applied.doc && !applied.failed) {
-                        doc = applied.doc
-                        validSteps.push(s)
-                        clientIDs.push(s.clientID)
-                      } else {
-                        console.warn('REBASE ERROR:', applied.failed)
-                      }
-                    })
-                    proseMirror.view.dispatch(receiveTransaction(proseMirror.view.state, validSteps, clientIDs))
-                  }
-                })
-              }
-            })
+                  proseMirror.view.updateState(updatedState)
+                  EmitCursorToEveryone(sendableSteps(updatedState))
+                } else {
+                  Socket.emit(getChangesEvent, DocumentRoomName, getVersion(proseMirror.view.state), (status: boolean, steps: any[]) => {
+                    if (status) {
+                      let doc = proseMirror.view.state.doc
+                      let validSteps: Step[] = []
+                      let clientIDs: any[] = []
+                      steps.map((s) => {
+                        s = Step.fromJSON(schema, s)
+                        let applied = s.apply(doc)
+                        if (applied.doc && !applied.failed) {
+                          doc = applied.doc
+                          validSteps.push(s)
+                          clientIDs.push(s.clientID)
+                        } else {
+                          console.warn('REBASE ERROR:', applied.failed)
+                        }
+                      })
+                      proseMirror.view.dispatch(receiveTransaction(proseMirror.view.state, validSteps, clientIDs))
+                      EmitCursorToEveryone(sendableSteps(proseMirror.view.state))
+                    }
+                  })
+                }
+              })
+            }
           })
         }
         const Socket = props.Socket
@@ -429,4 +439,14 @@ interface CreateProseMirrorOptions {
 interface DocumentFromServer {
   version: string
   doc: string
+}
+
+export interface IAmLive {
+  documentID: string
+  id: string
+  fullName: string
+  to: number
+  from: number
+  cursor: number
+  focus: boolean
 }
