@@ -27,7 +27,7 @@ export function setup(options, colab?: boolean, clientID?: number, version?: num
     gapCursor(),
     linkify,
     placeholder(options.placeholder),
-    select,
+    select(),
     history(),
     new Plugin({
       props: {
