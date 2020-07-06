@@ -27,7 +27,7 @@ function focusedReducer(transaction: Transaction, state: boolean) {
   return typeof focused === 'boolean' ? focused : state
 }
 
-const SelectPlugin = (socket: SocketIOClient.Socket): Plugin => {
+const SelectPlugin = (): Plugin => {
   return new Plugin({
     state: {
       init(config, instance) {
@@ -54,7 +54,6 @@ const SelectPlugin = (socket: SocketIOClient.Socket): Plugin => {
       handleDOMEvents: {
         blur(view) {
           view.dispatch(view.state.tr.setMeta(key, false))
-          socket.emit('USER_CURSOR_UPDATE', null, '123')
           return false
         },
         focus(view) {
